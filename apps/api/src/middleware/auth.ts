@@ -12,7 +12,8 @@ export interface AuthedRequest extends Request {
 }
 
 export function requireAuth(req: AuthedRequest, _res: Response, next: NextFunction) {
-  const token = req.cookies?.[AUTH_COOKIE]
+  const bearer = req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.slice(7) : undefined
+  const token = bearer ?? req.cookies?.[AUTH_COOKIE]
   if (!token) return next(new UnauthorizedError())
 
   try {

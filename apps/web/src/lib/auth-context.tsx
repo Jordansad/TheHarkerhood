@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState, type ReactNode } from 'react'
-import { api } from './api-client'
+import { api, setAuthToken, clearAuthToken } from './api-client'
 import type { AuthResponseDTO, UserDTO } from '@hackerhood/types'
 
 export interface AuthContextValue {
@@ -31,17 +31,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   async function login(email: string, password: string) {
-    const { user } = await api.post<AuthResponseDTO>('/api/auth/login', { email, password })
+    const { user, token } = await api.post<AuthResponseDTO>('/api/auth/login', { email, password })
+    setAuthToken(token)
     setUser(user)
   }
 
   async function register(email: string, password: string, displayName: string) {
-    const { user } = await api.post<AuthResponseDTO>('/api/auth/register', { email, password, displayName })
+    const { user, token } = await api.post<AuthResponseDTO>('/api/auth/register', { email, password, displayName })
+    setAuthToken(token)
     setUser(user)
   }
 
   async function logout() {
     await api.post('/api/auth/logout')
+    clearAuthToken()
     setUser(null)
   }
 

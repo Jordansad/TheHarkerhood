@@ -32,7 +32,7 @@ export async function register(req: AuthedRequest, res: Response) {
 
   const { user, token } = await authService.register(parsed.data.email, parsed.data.password, parsed.data.displayName)
   res.cookie(AUTH_COOKIE, token, COOKIE_OPTIONS)
-  res.status(201).json({ user })
+  res.status(201).json({ user, token })
 }
 
 export async function login(req: AuthedRequest, res: Response) {
@@ -41,7 +41,7 @@ export async function login(req: AuthedRequest, res: Response) {
 
   const { user, token } = await authService.login(parsed.data.email, parsed.data.password)
   res.cookie(AUTH_COOKIE, token, COOKIE_OPTIONS)
-  res.json({ user })
+  res.json({ user, token })
 }
 
 export async function me(req: AuthedRequest, res: Response) {

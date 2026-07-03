@@ -99,6 +99,7 @@ export interface UserDTO {
 
 export interface AuthResponseDTO {
   user: UserDTO
+  token: string
 }
 
 export type MethodologyCategory =
