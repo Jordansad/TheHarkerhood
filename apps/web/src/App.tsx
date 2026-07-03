@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { ClipboardList, NotebookPen, BookOpen, Flag, Award, HelpCircle, Bot } from 'lucide-react'
+import { NotebookPen, BookOpen, Flag, Award, HelpCircle, Bot } from 'lucide-react'
 import { AuthProvider } from '@/lib/auth-context'
 import { useAuth } from '@/lib/use-auth'
 import { AuthGuard } from '@/components/layout/AuthGuard'
@@ -9,6 +9,8 @@ import { Register } from '@/pages/Register'
 import { Dashboard } from '@/pages/Dashboard'
 import { Roadmap } from '@/pages/Roadmap'
 import { SkillDetail } from '@/pages/SkillDetail'
+import { Methodologies } from '@/pages/Methodologies'
+import { MethodologyDetail } from '@/pages/MethodologyDetail'
 import { ComingSoon } from '@/pages/ComingSoon'
 
 function PublicOnly({ children }: { children: React.ReactNode }) {
@@ -28,10 +30,8 @@ function AppRoutes() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/roadmap" element={<Roadmap />} />
         <Route path="/roadmap/:slug" element={<SkillDetail />} />
-        <Route
-          path="/methodologies"
-          element={<ComingSoon title="Méthodologies" description="Guides pratiques de pentest web, interne, AD, WiFi, OSINT, CTF et bug bounty avec checklists." icon={ClipboardList} />}
-        />
+        <Route path="/methodologies" element={<Methodologies />} />
+        <Route path="/methodologies/:slug" element={<MethodologyDetail />} />
         <Route
           path="/journal"
           element={<ComingSoon title="Journal" description="Ton journal personnel : notes, writeups, commandes et découvertes, façon Obsidian." icon={NotebookPen} />}

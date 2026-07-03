@@ -13,4 +13,8 @@ export const env = {
   jwtSecret: required('JWT_SECRET'),
   webOrigin: required('WEB_ORIGIN', 'http://localhost:5173'),
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+  adminEmails: (process.env.ADMIN_EMAILS ?? '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean),
 }

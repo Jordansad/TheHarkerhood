@@ -1,5 +1,6 @@
 import { SkillCategory, SkillDifficulty } from '@prisma/client'
 import { prisma } from '../src/lib/prisma'
+import { seedMethodologies } from './seed-methodologies'
 
 interface SkillSeed {
   slug: string
@@ -264,6 +265,8 @@ async function main() {
   }
 
   console.log(`Seeded ${skills.length} skills.`)
+
+  await seedMethodologies()
 }
 
 main()

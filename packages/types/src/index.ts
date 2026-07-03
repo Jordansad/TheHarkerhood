@@ -59,10 +59,23 @@ export interface DashboardStatsDTO {
   nextSuggestedSkill: { id: string; slug: string; title: string } | null
 }
 
+export type UserRole =
+  | 'member'
+  | 'mentor'
+  | 'ctf_manager'
+  | 'documentation_manager'
+  | 'infrastructure_manager'
+  | 'red_team_lead'
+  | 'blue_team_lead'
+  | 'training_manager'
+  | 'co_founder'
+  | 'founder'
+
 export interface UserDTO {
   id: string
   email: string
   displayName: string
+  role: UserRole
   xp: number
   level: number
   streakCount: number
@@ -71,4 +84,37 @@ export interface UserDTO {
 
 export interface AuthResponseDTO {
   user: UserDTO
+}
+
+export type MethodologyCategory =
+  | 'web'
+  | 'internal'
+  | 'active_directory'
+  | 'wifi'
+  | 'osint'
+  | 'ctf'
+  | 'bug_bounty'
+
+export interface MethodologyStepDTO {
+  id: string
+  order: number
+  title: string
+  description: string
+  checked: boolean
+}
+
+export interface MethodologyDTO {
+  id: string
+  slug: string
+  title: string
+  category: MethodologyCategory
+  objective: string
+  preparation: string
+  tools: string[]
+  bestPractices: string
+  commonMistakes: string
+  deliverables: string
+  position: number
+  steps: MethodologyStepDTO[]
+  progressPercent: number
 }

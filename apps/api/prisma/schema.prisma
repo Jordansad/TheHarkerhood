@@ -41,17 +41,42 @@ enum ResourceType {
   doc
 }
 
+enum MethodologyCategory {
+  web
+  internal
+  active_directory
+  wifi
+  osint
+  ctf
+  bug_bounty
+}
+
+enum UserRole {
+  member
+  mentor
+  ctf_manager
+  documentation_manager
+  infrastructure_manager
+  red_team_lead
+  blue_team_lead
+  training_manager
+  co_founder
+  founder
+}
+
 model User {
   id            String    @id @default(uuid())
   email         String    @unique
   passwordHash  String
   displayName   String
+  role          UserRole  @default(member)
   xp            Int       @default(0)
   streakCount   Int       @default(0)
   lastActiveAt  DateTime?
   createdAt     DateTime  @default(now())
 
   skillProgress UserSkillProgress[]
+  stepProgress  UserStepProgress[]
   xpEvents      XpEvent[]
   badges        UserBadge[]
 }
@@ -121,6 +146,48 @@ model XpEvent {
   reason    String
   createdAt DateTime @default(now())
 
+  @@index([userId])
+}
+
+model Methodology {
+  id             String              @id @default(uuid())
+  slug           String              @unique
+  title          String
+  category       MethodologyCategory
+  objective      String
+  preparation    String
+  tools          String[]
+  bestPractices  String
+  commonMistakes String
+  deliverables   String
+  position       Int                 @default(0)
+
+  steps MethodologyStep[]
+}
+
+model MethodologyStep {
+  id            String      @id @default(uuid())
+  methodologyId String
+  methodology   Methodology @relation(fields: [methodologyId], references: [id], onDelete: Cascade)
+  order         Int
+  title         String
+  description   String
+
+  progress UserStepProgress[]
+
+  @@index([methodologyId])
+}
+
+model UserStepProgress {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stepId    String
+  step      MethodologyStep  @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  checked   Boolean          @default(false)
+  checkedAt DateTime?
+
+  @@unique([userId, stepId])
   @@index([userId])
 }
 

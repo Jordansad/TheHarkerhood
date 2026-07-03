@@ -5,6 +5,7 @@ import { env } from './lib/env'
 import { authRouter } from './routes/auth.routes'
 import { skillsRouter } from './routes/skills.routes'
 import { dashboardRouter } from './routes/dashboard.routes'
+import { methodologiesRouter } from './routes/methodologies.routes'
 import { errorHandler } from './middleware/error'
 
 const app = express()
@@ -18,6 +19,7 @@ app.get('/health', (_req, res) => res.json({ ok: true }))
 app.use('/api/auth', authRouter)
 app.use('/api/skills', skillsRouter)
 app.use('/api/dashboard', dashboardRouter)
+app.use('/api/methodologies', methodologiesRouter)
 
 app.use(errorHandler)
 

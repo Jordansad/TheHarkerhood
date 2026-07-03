@@ -4,15 +4,17 @@ import { prisma } from '../lib/prisma'
 import { env } from '../lib/env'
 import { ConflictError, UnauthorizedError } from '../lib/errors'
 import { computeLevel } from '../lib/xp'
+import type { User } from '@prisma/client'
 import type { UserDTO } from '@hackerhood/types'
 
 const TOKEN_TTL = '7d'
 
-function toUserDTO(user: { id: string; email: string; displayName: string; xp: number; streakCount: number; createdAt: Date }): UserDTO {
+function toUserDTO(user: User): UserDTO {
   return {
     id: user.id,
     email: user.email,
     displayName: user.displayName,
+    role: user.role,
     xp: user.xp,
     level: computeLevel(user.xp).level,
     streakCount: user.streakCount,
@@ -29,7 +31,8 @@ export async function register(email: string, password: string, displayName: str
   if (existing) throw new ConflictError('Un compte existe déjà avec cet email.')
 
   const passwordHash = await bcrypt.hash(password, 12)
-  const user = await prisma.user.create({ data: { email, passwordHash, displayName } })
+  const role = env.adminEmails.includes(email.toLowerCase()) ? 'founder' : 'member'
+  const user = await prisma.user.create({ data: { email, passwordHash, displayName, role } })
   return { user: toUserDTO(user), token: signToken(user.id) }
 }
 
