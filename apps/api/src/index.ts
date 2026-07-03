@@ -14,6 +14,7 @@ import { certificationsRouter } from './routes/certifications.routes'
 import { teamRouter } from './routes/team.routes'
 import { quizRouter } from './routes/quiz.routes'
 import { mentorRouter } from './routes/mentor.routes'
+import { adminRouter } from './routes/admin.routes'
 import { errorHandler } from './middleware/error'
 
 const app = express()
@@ -36,6 +37,7 @@ app.use('/api/certifications', certificationsRouter)
 app.use('/api/team', teamRouter)
 app.use('/api/quiz', quizRouter)
 app.use('/api/mentor', mentorRouter)
+app.use('/api/admin', adminRouter)
 
 app.use(errorHandler)
 

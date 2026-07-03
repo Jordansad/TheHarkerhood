@@ -286,6 +286,33 @@ export interface TeamMemberDTO {
   createdAt: string
 }
 
+export interface AdminActivityEntryDTO {
+  id: string
+  displayName: string
+  type: ActivityType
+  points: number
+  createdAt: string
+}
+
+export interface AdminMemberStatusDTO {
+  id: string
+  displayName: string
+  role: UserRole
+  tier: ProgressionTier
+  tierLabel: string
+  xp: number
+  lastActivityAt: string | null
+  daysSinceActivity: number | null
+}
+
+export interface AdminOverviewDTO {
+  totalMembers: number
+  tierBreakdown: { tier: ProgressionTier; label: string; count: number }[]
+  topMembers: AdminMemberStatusDTO[]
+  inactiveMembers: AdminMemberStatusDTO[]
+  recentActivity: AdminActivityEntryDTO[]
+}
+
 export interface AiConversationSummaryDTO {
   id: string
   title: string

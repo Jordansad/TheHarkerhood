@@ -37,3 +37,17 @@ export function requireQuizManager(req: AuthedRequest, _res: Response, next: Nex
     })
     .catch(next)
 }
+
+const ADMIN_ROLES: UserRole[] = ['founder', 'co_founder']
+
+export function requireAdmin(req: AuthedRequest, _res: Response, next: NextFunction) {
+  prisma.user
+    .findUnique({ where: { id: req.userId! }, select: { role: true } })
+    .then((user) => {
+      if (!user || !ADMIN_ROLES.includes(user.role)) {
+        return next(new ForbiddenError('Réservé aux fondateurs.'))
+      }
+      next()
+    })
+    .catch(next)
+}

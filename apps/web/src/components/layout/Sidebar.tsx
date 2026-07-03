@@ -1,10 +1,12 @@
 import { NavLink } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import {
   LayoutDashboard, Map, ClipboardList, NotebookPen, BookOpen,
-  Flag, Award, HelpCircle, Bot, LogOut, Zap, Users, ScrollText,
+  Flag, Award, HelpCircle, Bot, LogOut, Zap, Users, ScrollText, ShieldAlert,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/use-auth'
+import { canViewAdmin } from '@/lib/can-view-admin'
 import { ROLE_LABEL } from '@/lib/user-role'
 import { Logo } from '@/components/ui/Logo'
 
@@ -25,6 +27,9 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const { user, logout } = useAuth()
+  const navItems = canViewAdmin(user?.role)
+    ? [...NAV_ITEMS, { to: '/admin', label: 'Admin', icon: ShieldAlert }]
+    : NAV_ITEMS
 
   return (
     <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-border bg-surface/50">
@@ -34,21 +39,28 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-3">
-        {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                isActive
-                  ? 'glow-accent bg-accent/10 text-accent'
-                  : 'text-text-muted hover:bg-surface-hover hover:text-text'
-              )
-            }
-          >
-            <Icon className="h-4 w-4 shrink-0" />
-            {label}
+        {navItems.map(({ to, label, icon: Icon }) => (
+          <NavLink key={to} to={to} className="relative block rounded-lg" end={to === '/dashboard'}>
+            {({ isActive }) => (
+              <>
+                {isActive && (
+                  <motion.span
+                    layoutId="nav-highlight"
+                    className="glow-accent absolute inset-0 rounded-lg bg-accent/10"
+                    transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                  />
+                )}
+                <span
+                  className={cn(
+                    'relative z-10 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                    isActive ? 'text-accent' : 'text-text-muted hover:bg-surface-hover hover:text-text'
+                  )}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {label}
+                </span>
+              </>
+            )}
           </NavLink>
         ))}
       </nav>

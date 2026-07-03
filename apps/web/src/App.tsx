@@ -26,6 +26,7 @@ import { QuizTake } from '@/pages/QuizTake'
 import { QuizEditor } from '@/pages/QuizEditor'
 import { Mentor } from '@/pages/Mentor'
 import { Charte } from '@/pages/Charte'
+import { Admin } from '@/pages/Admin'
 
 function PublicOnly({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -61,6 +62,7 @@ function AppRoutes() {
         <Route path="/quiz/:id" element={<QuizTake />} />
         <Route path="/mentor" element={<Mentor />} />
         <Route path="/charte" element={<Charte />} />
+        <Route path="/admin" element={<Admin />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

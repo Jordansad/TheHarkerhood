@@ -5,6 +5,7 @@ import { ApiError } from '@/lib/api-client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Logo } from '@/components/ui/Logo'
+import { LogoWatermark } from '@/components/ui/LogoWatermark'
 
 export function Register() {
   const { register } = useAuth()
@@ -30,8 +31,9 @@ export function Register() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg px-4">
-      <div className="w-full max-w-sm">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-bg px-4">
+      <LogoWatermark className="left-1/2 top-1/2 h-[140vh] w-[140vh] -translate-x-1/2 -translate-y-1/2" />
+      <div className="relative z-10 w-full max-w-sm">
         <div className="mb-8 flex items-center justify-center gap-2">
           <Logo size={36} />
           <span className="font-mono text-lg font-bold tracking-wide">THE HACKERHOOD</span>
