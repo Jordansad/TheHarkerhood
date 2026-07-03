@@ -36,7 +36,7 @@ export function Quiz() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Quiz</h1>
           <p className="mt-1 text-sm text-text-muted">QCM pour réviser ce que tu as appris.</p>

@@ -1,8 +1,8 @@
 import { NavLink } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Map, ClipboardList, NotebookPen, BookOpen,
-  Flag, Award, HelpCircle, Bot, LogOut, Zap, Users, ScrollText, ShieldAlert,
+  Flag, Award, HelpCircle, Bot, LogOut, Zap, Users, ScrollText, ShieldAlert, X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/use-auth'
@@ -25,22 +25,50 @@ const NAV_ITEMS = [
   { to: '/charte', label: 'Charte', icon: ScrollText },
 ]
 
-export function Sidebar() {
+interface SidebarProps {
+  open: boolean
+  onClose: () => void
+}
+
+export function Sidebar({ open, onClose }: SidebarProps) {
   const { user, logout } = useAuth()
   const navItems = canViewAdmin(user?.role)
     ? [...NAV_ITEMS, { to: '/admin', label: 'Admin', icon: ShieldAlert }]
     : NAV_ITEMS
 
   return (
-    <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-border bg-surface/50">
-      <div className="flex items-center gap-2 px-5 py-5">
-        <Logo size={26} />
-        <span className="font-mono text-sm font-bold">HACKERHOOD</span>
+    <>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className="fixed inset-0 z-40 bg-black/60 md:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+        )}
+      </AnimatePresence>
+
+      <aside
+        className={cn(
+          'fixed inset-y-0 left-0 z-50 flex h-screen w-60 shrink-0 flex-col border-r border-border bg-surface transition-transform duration-300 md:sticky md:top-0 md:z-auto md:translate-x-0 md:bg-surface/50',
+          open ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+      <div className="flex items-center justify-between gap-2 px-5 py-5">
+        <div className="flex items-center gap-2">
+          <Logo size={26} />
+          <span className="font-mono text-sm font-bold">HACKERHOOD</span>
+        </div>
+        <button onClick={onClose} className="text-text-muted hover:text-text md:hidden">
+          <X className="h-5 w-5" />
+        </button>
       </div>
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-3">
         {navItems.map(({ to, label, icon: Icon }) => (
-          <NavLink key={to} to={to} className="relative block rounded-lg" end={to === '/dashboard'}>
+          <NavLink key={to} to={to} className="relative block rounded-lg" end={to === '/dashboard'} onClick={onClose}>
             {({ isActive }) => (
               <>
                 {isActive && (
@@ -78,6 +106,7 @@ export function Sidebar() {
           Déconnexion
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   )
 }
