@@ -1,6 +1,6 @@
 import { createContext, useEffect, useState, type ReactNode } from 'react'
 import { api } from './api-client'
-import type { AuthResponseDTO, UserDTO } from '@cyberpath/types'
+import type { AuthResponseDTO, UserDTO } from '@hackerhood/types'
 
 export interface AuthContextValue {
   user: UserDTO | null

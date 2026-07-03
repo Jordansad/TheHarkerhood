@@ -1,6 +1,6 @@
 import { prisma } from '../lib/prisma'
 import { computeLevel } from '../lib/xp'
-import type { DashboardStatsDTO } from '@cyberpath/types'
+import type { DashboardStatsDTO } from '@hackerhood/types'
 
 export async function getDashboardStats(userId: string): Promise<DashboardStatsDTO> {
   const [user, skills, progressRows] = await Promise.all([

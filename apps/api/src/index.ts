@@ -22,5 +22,5 @@ app.use('/api/dashboard', dashboardRouter)
 app.use(errorHandler)
 
 app.listen(env.port, () => {
-  console.log(`CyberPath API listening on port ${env.port}`)
+  console.log(`The Hackerhood API listening on port ${env.port}`)
 })

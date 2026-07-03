@@ -4,7 +4,7 @@ import { prisma } from '../lib/prisma'
 import { env } from '../lib/env'
 import { ConflictError, UnauthorizedError } from '../lib/errors'
 import { computeLevel } from '../lib/xp'
-import type { UserDTO } from '@cyberpath/types'
+import type { UserDTO } from '@hackerhood/types'
 
 const TOKEN_TTL = '7d'
 

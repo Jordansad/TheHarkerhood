@@ -1,5 +1,5 @@
 {
-  "name": "@cyberpath/web",
+  "name": "@hackerhood/web",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -11,7 +11,7 @@
     "typecheck": "tsc -b --noEmit"
   },
   "dependencies": {
-    "@cyberpath/types": "*",
+    "@hackerhood/types": "*",
     "@radix-ui/react-progress": "^1.1.1",
     "clsx": "^2.1.1",
     "framer-motion": "^11.15.0",

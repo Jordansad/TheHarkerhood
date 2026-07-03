@@ -8,7 +8,7 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANT_CLS: Record<Variant, string> = {
-  primary: 'bg-accent text-black hover:bg-accent/90 font-semibold',
+  primary: 'bg-accent text-black hover:bg-accent/90 font-semibold shadow-[0_0_16px_-2px_var(--color-accent)] hover:shadow-[0_0_22px_-2px_var(--color-accent)]',
   secondary: 'bg-surface border border-border hover:bg-surface-hover text-text',
   ghost: 'hover:bg-surface text-text-muted hover:text-text',
   danger: 'bg-danger/10 border border-danger/40 text-danger hover:bg-danger/20',

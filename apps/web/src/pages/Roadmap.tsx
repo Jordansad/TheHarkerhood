@@ -6,10 +6,10 @@ import { CATEGORY_LABEL } from '@/lib/category'
 import { Card } from '@/components/ui/Card'
 import { DifficultyBadge } from '@/components/ui/Badge'
 import { FullPageSpinner } from '@/components/ui/Spinner'
-import type { SkillDTO } from '@cyberpath/types'
+import type { SkillDTO } from '@hackerhood/types'
 
 const STATUS_ICON = {
-  completed: <CheckCircle2 className="h-4 w-4 text-accent" />,
+  completed: <CheckCircle2 className="h-4 w-4 text-success" />,
   in_progress: <CircleDot className="h-4 w-4 text-info" />,
   not_started: <CircleDashed className="h-4 w-4 text-text-muted" />,
 }

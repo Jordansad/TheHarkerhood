@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
-import type { SkillDifficulty } from '@cyberpath/types'
+import type { SkillDifficulty } from '@hackerhood/types'
 
 const DIFFICULTY_CLS: Record<SkillDifficulty, string> = {
-  beginner: 'bg-accent/10 text-accent border-accent/30',
-  intermediate: 'bg-info/10 text-info border-info/30',
+  beginner: 'bg-success/10 text-success border-success/30',
+  intermediate: 'bg-accent/10 text-accent border-accent/30',
   advanced: 'bg-warning/10 text-warning border-warning/30',
   expert: 'bg-expert/10 text-expert border-expert/30',
 }

@@ -25,7 +25,7 @@ export function Sidebar() {
     <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-border bg-surface/50">
       <div className="flex items-center gap-2 px-5 py-5">
         <Terminal className="h-5 w-5 text-accent" />
-        <span className="font-mono text-sm font-bold tracking-tight">cyberpath</span>
+        <span className="font-mono text-sm font-bold tracking-wide">THE HACKERHOOD</span>
       </div>
 
       <nav className="flex-1 space-y-1 px-3">
@@ -36,7 +36,9 @@ export function Sidebar() {
             className={({ isActive }) =>
               cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                isActive ? 'bg-accent/10 text-accent' : 'text-text-muted hover:bg-surface-hover hover:text-text'
+                isActive
+                  ? 'glow-accent bg-accent/10 text-accent'
+                  : 'text-text-muted hover:bg-surface-hover hover:text-text'
               )
             }
           >

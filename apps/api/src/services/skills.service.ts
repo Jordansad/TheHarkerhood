@@ -1,6 +1,6 @@
 import { prisma } from '../lib/prisma'
 import { NotFoundError } from '../lib/errors'
-import type { SkillDTO, SkillProgressStatus } from '@cyberpath/types'
+import type { SkillDTO, SkillProgressStatus } from '@hackerhood/types'
 import { Prisma } from '@prisma/client'
 import { awardXp } from './xp.service'
 

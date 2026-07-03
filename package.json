@@ -1,5 +1,5 @@
 {
-  "name": "cyberpath",
+  "name": "hackerhood",
   "private": true,
   "workspaces": [
     "apps/*",

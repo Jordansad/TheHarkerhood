@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: cyberpath-api
+    name: hackerhood-api
     runtime: node
     rootDir: apps/api
     buildCommand: npm install && npm run build

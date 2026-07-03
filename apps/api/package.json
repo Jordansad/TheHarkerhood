@@ -1,5 +1,5 @@
 {
-  "name": "@cyberpath/api",
+  "name": "@hackerhood/api",
   "version": "0.0.1",
   "private": true,
   "type": "commonjs",
@@ -14,7 +14,7 @@
     "prisma:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@cyberpath/types": "*",
+    "@hackerhood/types": "*",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "bcryptjs": "^2.4.3",

@@ -1,4 +1,4 @@
-import type { SkillCategory } from '@cyberpath/types'
+import type { SkillCategory } from '@hackerhood/types'
 
 export const CATEGORY_LABEL: Record<SkillCategory, string> = {
   linux: 'Linux',

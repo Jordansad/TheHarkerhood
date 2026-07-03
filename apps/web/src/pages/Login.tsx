@@ -33,7 +33,7 @@ export function Login() {
       <div className="w-full max-w-sm">
         <div className="mb-8 flex items-center justify-center gap-2">
           <Terminal className="h-6 w-6 text-accent" />
-          <span className="font-mono text-lg font-bold">cyberpath</span>
+          <span className="font-mono text-lg font-bold tracking-wide">THE HACKERHOOD</span>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-border bg-surface p-6">

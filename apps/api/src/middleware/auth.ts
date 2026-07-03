@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken'
 import { env } from '../lib/env'
 import { UnauthorizedError } from '../lib/errors'
 
-export const AUTH_COOKIE = 'cyberpath_token'
+export const AUTH_COOKIE = 'hackerhood_token'
 
 export interface AuthedRequest extends Request {
   userId?: string

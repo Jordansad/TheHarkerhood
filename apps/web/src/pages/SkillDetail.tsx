@@ -8,7 +8,7 @@ import { DifficultyBadge, Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { FullPageSpinner } from '@/components/ui/Spinner'
 import { cn } from '@/lib/utils'
-import type { SkillDTO, SkillProgressStatus } from '@cyberpath/types'
+import type { SkillDTO, SkillProgressStatus } from '@hackerhood/types'
 
 const STATUS_OPTIONS: { value: SkillProgressStatus; label: string }[] = [
   { value: 'not_started', label: 'Pas commencé' },

@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/use-auth'
 import { Card } from '@/components/ui/Card'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { FullPageSpinner } from '@/components/ui/Spinner'
-import type { DashboardStatsDTO } from '@cyberpath/types'
+import type { DashboardStatsDTO } from '@hackerhood/types'
 
 export function Dashboard() {
   const { user } = useAuth()

@@ -1,6 +1,6 @@
-# CyberPath
+# The Hackerhood
 
-Compagnon personnel d'apprentissage en cybersécurité : roadmap de compétences, dashboard de progression, et (à venir) méthodologies, checklists, journal, wiki, CTF, certifications, quiz et mentor IA.
+Compagnon personnel d'apprentissage en cybersécurité — *Building skills. Earning certifications.* Roadmap de compétences, dashboard de progression, et (à venir) méthodologies, checklists, journal, wiki, CTF, certifications, quiz et mentor IA.
 
 ## Stack
 
