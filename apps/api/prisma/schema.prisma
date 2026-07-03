@@ -26,6 +26,20 @@ enum SkillCategory {
   malware_analysis
   forensics
   red_team
+  scripting
+  osint
+  blue_team
+  bug_bounty
+  containers
+  ai_security
+  exploitation
+}
+
+enum RoadmapPhase {
+  fondations
+  intermediaire
+  avance
+  expert
 }
 
 enum SkillProgressStatus {
@@ -75,10 +89,13 @@ model User {
   lastActiveAt  DateTime?
   createdAt     DateTime  @default(now())
 
-  skillProgress UserSkillProgress[]
-  stepProgress  UserStepProgress[]
-  xpEvents      XpEvent[]
-  badges        UserBadge[]
+  skillProgress   UserSkillProgress[]
+  stepProgress    UserStepProgress[]
+  xpEvents        XpEvent[]
+  badges          UserBadge[]
+  activityLogs    ActivityLog[]
+  journalEntries  JournalEntry[]
+  certifications  UserCertificationProgress[]
 }
 
 model Skill {
@@ -88,6 +105,7 @@ model Skill {
   description    String
   importance     String
   category       SkillCategory
+  phase          RoadmapPhase
   difficulty     SkillDifficulty
   estimatedHours Int
   position       Int             @default(0)
@@ -210,4 +228,209 @@ model UserBadge {
   earnedAt DateTime @default(now())
 
   @@unique([userId, badgeId])
+}
+
+// ══════════════════════════════════════════
+// Progression : niveaux Bronze → Legend et journal d'activités
+// ══════════════════════════════════════════
+
+enum ActivityType {
+  thm_room
+  htb_easy
+  htb_medium
+  htb_hard
+  ctf_participation
+  ctf_flag
+  writeup
+  script
+  pentest_report
+  mentoring
+  talk
+  external_cert
+}
+
+model ActivityLog {
+  id        String       @id @default(uuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      ActivityType
+  points    Int
+  note      String?
+  createdAt DateTime     @default(now())
+
+  @@index([userId])
+}
+
+// ══════════════════════════════════════════
+// Journal personnel & Wiki communautaire
+// ══════════════════════════════════════════
+
+enum JournalEntryType {
+  note
+  writeup
+  pentest_report
+  incident_report
+  daily
+}
+
+model JournalEntry {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  content   String
+  type      JournalEntryType
+  tags      String[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([userId])
+}
+
+model WikiPage {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  category  String
+  title     String
+  content   String
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+// ══════════════════════════════════════════
+// CTF : catégories pédagogiques et calendrier
+// ══════════════════════════════════════════
+
+enum CtfCategoryType {
+  web
+  crypto
+  forensics
+  reverse
+  osint
+  pwn
+  stego
+  mobile
+  cloud
+}
+
+model CtfCategory {
+  id             String          @id @default(uuid())
+  slug           String          @unique
+  title          String
+  category       CtfCategoryType
+  howToThink     String
+  methodology    String
+  tools          String[]
+  commonMistakes String
+  keyConcepts    String
+  position       Int             @default(0)
+}
+
+model CtfCompetition {
+  id         String @id @default(uuid())
+  name       String
+  frequency  String
+  level      String
+  categories String[]
+  url        String?
+  position   Int    @default(0)
+}
+
+// ══════════════════════════════════════════
+// Certifications
+// ══════════════════════════════════════════
+
+enum CertificationStatus {
+  planned
+  studying
+  passed
+}
+
+model Certification {
+  id       String @id @default(uuid())
+  slug     String @unique
+  title    String
+  level    String
+  notes    String
+  position Int    @default(0)
+
+  progress UserCertificationProgress[]
+}
+
+model UserCertificationProgress {
+  id              String              @id @default(uuid())
+  userId          String
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  certificationId String
+  certification   Certification       @relation(fields: [certificationId], references: [id], onDelete: Cascade)
+  status          CertificationStatus @default(planned)
+  updatedAt       DateTime            @updatedAt
+
+  @@unique([userId, certificationId])
+}
+
+// ══════════════════════════════════════════
+// Quiz
+// ══════════════════════════════════════════
+
+model Quiz {
+  id       String        @id @default(uuid())
+  title    String
+  category SkillCategory
+
+  questions QuizQuestion[]
+}
+
+model QuizQuestion {
+  id            String @id @default(uuid())
+  quizId        String
+  quiz          Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  prompt        String
+  choices       Json
+  correctIndex  Int
+  explanation   String
+
+  @@index([quizId])
+}
+
+model UserQuizAttempt {
+  id         String   @id @default(uuid())
+  userId     String
+  quizId     String
+  score      Int
+  total      Int
+  answeredAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ══════════════════════════════════════════
+// Mentor IA
+// ══════════════════════════════════════════
+
+enum AiMessageRole {
+  user
+  assistant
+}
+
+model AiConversation {
+  id        String      @id @default(uuid())
+  userId    String
+  title     String
+  createdAt DateTime    @default(now())
+
+  messages AiMessage[]
+
+  @@index([userId])
+}
+
+model AiMessage {
+  id             String         @id @default(uuid())
+  conversationId String
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           AiMessageRole
+  content        String
+  createdAt      DateTime       @default(now())
+
+  @@index([conversationId])
 }

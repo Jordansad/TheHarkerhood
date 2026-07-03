@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { NotebookPen, BookOpen, Flag, Award, HelpCircle, Bot } from 'lucide-react'
 import { AuthProvider } from '@/lib/auth-context'
 import { useAuth } from '@/lib/use-auth'
+import { ToastProvider } from '@/lib/toast-context'
 import { AuthGuard } from '@/components/layout/AuthGuard'
 import { FullPageSpinner } from '@/components/ui/Spinner'
 import { Login } from '@/pages/Login'
@@ -11,7 +11,19 @@ import { Roadmap } from '@/pages/Roadmap'
 import { SkillDetail } from '@/pages/SkillDetail'
 import { Methodologies } from '@/pages/Methodologies'
 import { MethodologyDetail } from '@/pages/MethodologyDetail'
-import { ComingSoon } from '@/pages/ComingSoon'
+import { Activities } from '@/pages/Activities'
+import { Journal } from '@/pages/Journal'
+import { JournalEditor } from '@/pages/JournalEditor'
+import { Wiki } from '@/pages/Wiki'
+import { WikiEditor } from '@/pages/WikiEditor'
+import { Ctf } from '@/pages/Ctf'
+import { CtfCategoryDetail } from '@/pages/CtfCategoryDetail'
+import { Certifications } from '@/pages/Certifications'
+import { Team } from '@/pages/Team'
+import { Quiz } from '@/pages/Quiz'
+import { QuizTake } from '@/pages/QuizTake'
+import { Mentor } from '@/pages/Mentor'
+import { Charte } from '@/pages/Charte'
 
 function PublicOnly({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -32,30 +44,19 @@ function AppRoutes() {
         <Route path="/roadmap/:slug" element={<SkillDetail />} />
         <Route path="/methodologies" element={<Methodologies />} />
         <Route path="/methodologies/:slug" element={<MethodologyDetail />} />
-        <Route
-          path="/journal"
-          element={<ComingSoon title="Journal" description="Ton journal personnel : notes, writeups, commandes et découvertes, façon Obsidian." icon={NotebookPen} />}
-        />
-        <Route
-          path="/wiki"
-          element={<ComingSoon title="Wiki" description="Ta base de connaissances personnelle organisée par thème." icon={BookOpen} />}
-        />
-        <Route
-          path="/ctf"
-          element={<ComingSoon title="CTF" description="Méthodologie et ressources par catégorie : Web, Crypto, Forensics, Reverse, OSINT, Pwn, Stego, Mobile, Cloud." icon={Flag} />}
-        />
-        <Route
-          path="/certifications"
-          element={<ComingSoon title="Certifications" description="Catalogue de certifications et suivi de ta progression vers chacune d'elles." icon={Award} />}
-        />
-        <Route
-          path="/quiz"
-          element={<ComingSoon title="Quiz" description="QCM, flashcards et scénarios pour réviser ce que tu as appris." icon={HelpCircle} />}
-        />
-        <Route
-          path="/mentor"
-          element={<ComingSoon title="Mentor IA" description="Un assistant IA pour t'aider sur tes labs, expliquer des commandes et te guider dans ta pratique." icon={Bot} />}
-        />
+        <Route path="/activites" element={<Activities />} />
+        <Route path="/journal" element={<Journal />} />
+        <Route path="/journal/:id" element={<JournalEditor />} />
+        <Route path="/wiki" element={<Wiki />} />
+        <Route path="/wiki/:slug" element={<WikiEditor />} />
+        <Route path="/ctf" element={<Ctf />} />
+        <Route path="/ctf/:slug" element={<CtfCategoryDetail />} />
+        <Route path="/certifications" element={<Certifications />} />
+        <Route path="/equipe" element={<Team />} />
+        <Route path="/quiz" element={<Quiz />} />
+        <Route path="/quiz/:id" element={<QuizTake />} />
+        <Route path="/mentor" element={<Mentor />} />
+        <Route path="/charte" element={<Charte />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
@@ -66,9 +67,11 @@ function AppRoutes() {
 export function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </ToastProvider>
     </BrowserRouter>
   )
 }

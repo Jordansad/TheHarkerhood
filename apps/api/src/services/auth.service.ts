@@ -3,20 +3,22 @@ import jwt from 'jsonwebtoken'
 import { prisma } from '../lib/prisma'
 import { env } from '../lib/env'
 import { ConflictError, UnauthorizedError } from '../lib/errors'
-import { computeLevel } from '../lib/xp'
+import { computeTier } from '../lib/xp'
 import type { User } from '@prisma/client'
 import type { UserDTO } from '@hackerhood/types'
 
 const TOKEN_TTL = '7d'
 
 function toUserDTO(user: User): UserDTO {
+  const { tier, label } = computeTier(user.xp)
   return {
     id: user.id,
     email: user.email,
     displayName: user.displayName,
     role: user.role,
     xp: user.xp,
-    level: computeLevel(user.xp).level,
+    tier,
+    tierLabel: label,
     streakCount: user.streakCount,
     createdAt: user.createdAt.toISOString(),
   }

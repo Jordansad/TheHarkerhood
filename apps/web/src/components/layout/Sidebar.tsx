@@ -1,22 +1,26 @@
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, Map, ClipboardList, NotebookPen, BookOpen,
-  Flag, Award, HelpCircle, Bot, LogOut,
+  Flag, Award, HelpCircle, Bot, LogOut, Zap, Users, ScrollText,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/use-auth'
+import { ROLE_LABEL } from '@/lib/user-role'
 import { Logo } from '@/components/ui/Logo'
 
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/roadmap', label: 'Roadmap', icon: Map },
   { to: '/methodologies', label: 'Méthodologies', icon: ClipboardList },
+  { to: '/activites', label: 'Activités', icon: Zap },
   { to: '/journal', label: 'Journal', icon: NotebookPen },
   { to: '/wiki', label: 'Wiki', icon: BookOpen },
   { to: '/ctf', label: 'CTF', icon: Flag },
   { to: '/certifications', label: 'Certifications', icon: Award },
   { to: '/quiz', label: 'Quiz', icon: HelpCircle },
   { to: '/mentor', label: 'Mentor IA', icon: Bot },
+  { to: '/equipe', label: 'Équipe', icon: Users },
+  { to: '/charte', label: 'Charte', icon: ScrollText },
 ]
 
 export function Sidebar() {
@@ -29,7 +33,7 @@ export function Sidebar() {
         <span className="font-mono text-sm font-bold">HACKERHOOD</span>
       </div>
 
-      <nav className="flex-1 space-y-1 px-3">
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3">
         {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
@@ -50,7 +54,10 @@ export function Sidebar() {
       </nav>
 
       <div className="border-t border-border p-3">
-        <div className="mb-2 px-2 text-xs text-text-muted truncate">{user?.displayName}</div>
+        <div className="mb-2 px-2 truncate">
+          <p className="text-xs text-text-muted">{user?.displayName}</p>
+          {user && <p className="text-[10px] text-accent">{ROLE_LABEL[user.role]}</p>}
+        </div>
         <button
           onClick={logout}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-text-muted transition-colors hover:bg-surface-hover hover:text-danger"

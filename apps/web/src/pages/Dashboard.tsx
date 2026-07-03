@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Flame, Target, TrendingUp, Zap } from 'lucide-react'
+import { ArrowRight, Flame, Target, TrendingUp, Trophy, NotebookPen } from 'lucide-react'
 import { api } from '@/lib/api-client'
 import { useAuth } from '@/lib/use-auth'
 import { Card } from '@/components/ui/Card'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { TIER_COLOR, tierProgressPercent } from '@/lib/tier'
+import { cn } from '@/lib/utils'
 import type { DashboardStatsDTO } from '@hackerhood/types'
+
+const PORTFOLIO_WRITEUP_GOAL = 10
 
 export function Dashboard() {
   const { user } = useAuth()
@@ -18,10 +22,8 @@ export function Dashboard() {
 
   if (!stats) return <FullPageSpinner />
 
-  // Level N requires N*100 XP (must match apps/api/src/lib/xp.ts).
-  const xpForCurrentLevel = stats.level * 100
-  const xpIntoLevel = xpForCurrentLevel - stats.xpToNextLevel
-  const levelProgressPercent = Math.round((xpIntoLevel / xpForCurrentLevel) * 100)
+  const tierPercent = Math.max(0, Math.min(100, tierProgressPercent(stats.xp, stats.tier)))
+  const portfolioPercent = Math.min(100, Math.round((stats.writeupCount / PORTFOLIO_WRITEUP_GOAL) * 100))
 
   return (
     <div className="space-y-8">
@@ -42,10 +44,10 @@ export function Dashboard() {
 
         <Card>
           <div className="flex items-center gap-2 text-text-muted">
-            <Zap className="h-4 w-4" />
-            <span className="text-xs font-medium">Niveau</span>
+            <Trophy className="h-4 w-4" />
+            <span className="text-xs font-medium">Palier</span>
           </div>
-          <p className="mt-2 text-3xl font-bold">{stats.level}</p>
+          <p className={cn('mt-2 text-3xl font-bold', TIER_COLOR[stats.tier])}>{stats.tierLabel}</p>
           <p className="text-xs text-text-muted">{stats.xp} XP au total</p>
         </Card>
 
@@ -78,10 +80,29 @@ export function Dashboard() {
 
       <Card>
         <div className="mb-2 flex items-center justify-between text-sm">
-          <span className="font-medium">Niveau {stats.level}</span>
-          <span className="text-text-muted">{stats.xpToNextLevel} XP avant le niveau {stats.level + 1}</span>
+          <span className="font-medium">Palier {stats.tierLabel}</span>
+          <span className="text-text-muted">
+            {stats.xpToNextTier > 0 ? `${stats.xpToNextTier} XP avant le palier suivant` : 'Palier maximum atteint'}
+          </span>
         </div>
-        <ProgressBar value={Math.max(0, Math.min(100, levelProgressPercent))} />
+        <ProgressBar value={tierPercent} />
+        <Link to="/activites" className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-accent hover:underline">
+          Déclarer une activité <ArrowRight className="h-3 w-3" />
+        </Link>
+      </Card>
+
+      <Card>
+        <div className="mb-2 flex items-center gap-2 text-sm font-medium">
+          <NotebookPen className="h-4 w-4 text-accent" /> Portfolio — Write-ups
+        </div>
+        <div className="mb-2 flex items-center justify-between text-sm">
+          <span className="text-text-muted">{stats.writeupCount}/{PORTFOLIO_WRITEUP_GOAL} write-ups publiés</span>
+          <span className="text-text-muted">{portfolioPercent}%</span>
+        </div>
+        <ProgressBar value={portfolioPercent} />
+        <Link to="/journal" className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-accent hover:underline">
+          Ouvrir le journal <ArrowRight className="h-3 w-3" />
+        </Link>
       </Card>
 
       {stats.nextSuggestedSkill && (

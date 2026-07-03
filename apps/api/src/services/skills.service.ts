@@ -24,6 +24,7 @@ function toSkillDTO(skill: SkillWithRelations, progress: SkillProgressStatus): S
     description: skill.description,
     importance: skill.importance,
     category: skill.category,
+    phase: skill.phase,
     difficulty: skill.difficulty,
     estimatedHours: skill.estimatedHours,
     position: skill.position,

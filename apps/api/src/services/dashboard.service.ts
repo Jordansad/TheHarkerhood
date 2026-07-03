@@ -1,15 +1,16 @@
 import { prisma } from '../lib/prisma'
-import { computeLevel } from '../lib/xp'
+import { computeTier } from '../lib/xp'
 import type { DashboardStatsDTO } from '@hackerhood/types'
 
 export async function getDashboardStats(userId: string): Promise<DashboardStatsDTO> {
-  const [user, skills, progressRows] = await Promise.all([
+  const [user, skills, progressRows, writeupCount] = await Promise.all([
     prisma.user.findUniqueOrThrow({ where: { id: userId } }),
     prisma.skill.findMany({
       select: { id: true, slug: true, title: true, position: true, prerequisites: { select: { id: true } } },
       orderBy: { position: 'asc' },
     }),
     prisma.userSkillProgress.findMany({ where: { userId } }),
+    prisma.journalEntry.count({ where: { userId, type: 'writeup' } }),
   ])
 
   const statusBySkillId = new Map(progressRows.map((p) => [p.skillId, p.status]))
@@ -24,7 +25,7 @@ export async function getDashboardStats(userId: string): Promise<DashboardStatsD
     return skill.prerequisites.every((prereq) => completedIds.has(prereq.id))
   })
 
-  const { level, xpToNextLevel } = computeLevel(user.xp)
+  const { tier, label, xpToNextTier } = computeTier(user.xp)
 
   return {
     totalSkills,
@@ -32,9 +33,11 @@ export async function getDashboardStats(userId: string): Promise<DashboardStatsD
     inProgressSkills,
     progressPercent: totalSkills === 0 ? 0 : Math.round((completedSkills / totalSkills) * 100),
     xp: user.xp,
-    level,
-    xpToNextLevel,
+    tier,
+    tierLabel: label,
+    xpToNextTier,
     streakCount: user.streakCount,
     nextSuggestedSkill: nextSkill ? { id: nextSkill.id, slug: nextSkill.slug, title: nextSkill.title } : null,
+    writeupCount,
   }
 }
