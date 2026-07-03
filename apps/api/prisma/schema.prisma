@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SkillDifficulty {
+  beginner
+  intermediate
+  advanced
+  expert
+}
+
+enum SkillCategory {
+  linux
+  networking
+  web
+  active_directory
+  windows
+  privesc
+  api_security
+  cloud
+  reverse_engineering
+  malware_analysis
+  forensics
+  red_team
+}
+
+enum SkillProgressStatus {
+  not_started
+  in_progress
+  completed
+}
+
+enum ResourceType {
+  article
+  video
+  course
+  doc
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  displayName   String
+  xp            Int       @default(0)
+  streakCount   Int       @default(0)
+  lastActiveAt  DateTime?
+  createdAt     DateTime  @default(now())
+
+  skillProgress UserSkillProgress[]
+  xpEvents      XpEvent[]
+  badges        UserBadge[]
+}
+
+model Skill {
+  id             String          @id @default(uuid())
+  slug           String          @unique
+  title          String
+  description    String
+  importance     String
+  category       SkillCategory
+  difficulty     SkillDifficulty
+  estimatedHours Int
+  position       Int             @default(0)
+  createdAt      DateTime        @default(now())
+
+  prerequisites   Skill[] @relation("SkillPrerequisites")
+  unlockedBySkill Skill[] @relation("SkillPrerequisites")
+
+  resources ResourceLink[]
+  labs      LabRecommendation[]
+  progress  UserSkillProgress[]
+}
+
+model ResourceLink {
+  id      String       @id @default(uuid())
+  skillId String
+  skill   Skill        @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  title   String
+  url     String
+  type    ResourceType
+
+  @@index([skillId])
+}
+
+model LabRecommendation {
+  id         String          @id @default(uuid())
+  skillId    String
+  skill      Skill           @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  title      String
+  platform   String
+  url        String?
+  difficulty SkillDifficulty
+
+  @@index([skillId])
+}
+
+model UserSkillProgress {
+  id          String               @id @default(uuid())
+  userId      String
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skillId     String
+  skill       Skill                @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  status      SkillProgressStatus  @default(not_started)
+  completedAt DateTime?
+  notes       String?
+
+  @@unique([userId, skillId])
+  @@index([userId])
+}
+
+model XpEvent {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Int
+  reason    String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Badge {
+  id          String @id @default(uuid())
+  slug        String @unique
+  title       String
+  description String
+  icon        String
+
+  users UserBadge[]
+}
+
+model UserBadge {
+  id       String   @id @default(uuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId  String
+  badge    Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  earnedAt DateTime @default(now())
+
+  @@unique([userId, badgeId])
+}
