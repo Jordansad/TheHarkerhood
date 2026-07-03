@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, Map, ClipboardList, NotebookPen, BookOpen,
-  Flag, Award, HelpCircle, Bot, LogOut, Terminal,
+  Flag, Award, HelpCircle, Bot, LogOut,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/use-auth'
+import { Logo } from '@/components/ui/Logo'
 
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -24,8 +25,8 @@ export function Sidebar() {
   return (
     <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-border bg-surface/50">
       <div className="flex items-center gap-2 px-5 py-5">
-        <Terminal className="h-5 w-5 text-accent" />
-        <span className="font-mono text-sm font-bold tracking-wide">THE HACKERHOOD</span>
+        <Logo size={26} />
+        <span className="font-mono text-sm font-bold">HACKERHOOD</span>
       </div>
 
       <nav className="flex-1 space-y-1 px-3">
