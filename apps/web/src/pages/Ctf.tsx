@@ -1,22 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ExternalLink } from 'lucide-react'
-import { api } from '@/lib/api-client'
+import { useApiGet } from '@/lib/use-api-get'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { ErrorState } from '@/components/ui/ErrorState'
 import { cn } from '@/lib/utils'
 import type { CtfCategoryDTO, CtfCompetitionDTO } from '@hackerhood/types'
 
 export function Ctf() {
   const [tab, setTab] = useState<'categories' | 'calendrier'>('categories')
-  const [categories, setCategories] = useState<CtfCategoryDTO[] | null>(null)
-  const [competitions, setCompetitions] = useState<CtfCompetitionDTO[] | null>(null)
-
-  useEffect(() => {
-    api.get<{ categories: CtfCategoryDTO[] }>('/api/ctf/categories').then((data) => setCategories(data.categories))
-    api.get<{ competitions: CtfCompetitionDTO[] }>('/api/ctf/competitions').then((data) => setCompetitions(data.competitions))
-  }, [])
+  const { data: categoriesData, error: categoriesError, retry: retryCategories } = useApiGet<{ categories: CtfCategoryDTO[] }>('/api/ctf/categories')
+  const { data: competitionsData, error: competitionsError, retry: retryCompetitions } = useApiGet<{ competitions: CtfCompetitionDTO[] }>('/api/ctf/competitions')
+  const categories = categoriesData?.categories ?? null
+  const competitions = competitionsData?.competitions ?? null
 
   return (
     <div className="space-y-6">
@@ -41,7 +39,9 @@ export function Ctf() {
       </div>
 
       {tab === 'categories' &&
-        (!categories ? (
+        (categoriesError ? (
+          <ErrorState message={categoriesError} onRetry={retryCategories} />
+        ) : !categories ? (
           <FullPageSpinner />
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -57,7 +57,9 @@ export function Ctf() {
         ))}
 
       {tab === 'calendrier' &&
-        (!competitions ? (
+        (competitionsError ? (
+          <ErrorState message={competitionsError} onRetry={retryCompetitions} />
+        ) : !competitions ? (
           <FullPageSpinner />
         ) : (
           <div className="space-y-2">

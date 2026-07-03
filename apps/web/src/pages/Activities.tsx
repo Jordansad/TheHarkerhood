@@ -1,25 +1,32 @@
 import { useEffect, useState } from 'react'
 import { Zap } from 'lucide-react'
-import { api } from '@/lib/api-client'
+import { api, ApiError } from '@/lib/api-client'
 import { ACTIVITY_LABEL, ACTIVITY_POINTS, ACTIVITY_TYPES } from '@/lib/activity-type'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { ErrorState } from '@/components/ui/ErrorState'
 import { useToast } from '@/lib/use-toast'
 import type { ActivityLogDTO, ActivityType } from '@hackerhood/types'
 
 export function Activities() {
   const toast = useToast()
   const [activities, setActivities] = useState<ActivityLogDTO[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
   const [type, setType] = useState<ActivityType>('thm_room')
   const [note, setNote] = useState('')
   const [flagPoints, setFlagPoints] = useState(5)
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    api.get<{ activities: ActivityLogDTO[] }>('/api/activities').then((data) => setActivities(data.activities))
-  }, [])
+    setError(null)
+    api
+      .get<{ activities: ActivityLogDTO[] }>('/api/activities')
+      .then((data) => setActivities(data.activities))
+      .catch((err) => setError(err instanceof ApiError ? err.message : 'Impossible de contacter le serveur.'))
+  }, [reloadKey])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -38,6 +45,7 @@ export function Activities() {
     }
   }
 
+  if (error) return <ErrorState message={error} onRetry={() => setReloadKey((k) => k + 1)} />
   if (!activities) return <FullPageSpinner />
 
   return (

@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
-import { api } from '@/lib/api-client'
+import { api, ApiError } from '@/lib/api-client'
 import { CATEGORY_LABEL } from '@/lib/category'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { ErrorState } from '@/components/ui/ErrorState'
 import { useToast } from '@/lib/use-toast'
 import type { QuizEditDTO, QuizQuestionEditDTO, SkillCategory } from '@hackerhood/types'
 
@@ -23,6 +24,8 @@ export function QuizEditor() {
   const toast = useToast()
 
   const [loading, setLoading] = useState(!isNew)
+  const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
   const [saving, setSaving] = useState(false)
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState<SkillCategory>('linux')
@@ -30,13 +33,17 @@ export function QuizEditor() {
 
   useEffect(() => {
     if (isNew) return
-    api.get<{ quiz: QuizEditDTO }>(`/api/quiz/${id}/edit`).then((data) => {
-      setTitle(data.quiz.title)
-      setCategory(data.quiz.category)
-      setQuestions(data.quiz.questions)
-      setLoading(false)
-    })
-  }, [id, isNew])
+    setError(null)
+    api
+      .get<{ quiz: QuizEditDTO }>(`/api/quiz/${id}/edit`)
+      .then((data) => {
+        setTitle(data.quiz.title)
+        setCategory(data.quiz.category)
+        setQuestions(data.quiz.questions)
+        setLoading(false)
+      })
+      .catch((err) => setError(err instanceof ApiError ? err.message : 'Impossible de contacter le serveur.'))
+  }, [id, isNew, reloadKey])
 
   function updateQuestion(index: number, patch: Partial<QuizQuestionEditDTO>) {
     setQuestions((qs) => qs.map((q, i) => (i === index ? { ...q, ...patch } : q)))
@@ -81,6 +88,7 @@ export function QuizEditor() {
     }
   }
 
+  if (error) return <ErrorState message={error} onRetry={() => setReloadKey((k) => k + 1)} />
   if (loading) return <FullPageSpinner />
 
   const canSave = title.trim() && questions.every((q) => q.prompt.trim() && q.explanation.trim() && q.choices.every((c) => c.trim()))

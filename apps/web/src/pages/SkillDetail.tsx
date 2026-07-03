@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, ExternalLink, FlaskConical } from 'lucide-react'
-import { api } from '@/lib/api-client'
+import { api, ApiError } from '@/lib/api-client'
 import { CATEGORY_LABEL } from '@/lib/category'
 import { Card } from '@/components/ui/Card'
 import { DifficultyBadge, Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { ErrorState } from '@/components/ui/ErrorState'
 import { cn } from '@/lib/utils'
 import type { SkillDTO, SkillProgressStatus } from '@hackerhood/types'
 
@@ -20,10 +21,15 @@ export function SkillDetail() {
   const { slug } = useParams<{ slug: string }>()
   const [skill, setSkill] = useState<SkillDTO | null>(null)
   const [updating, setUpdating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(() => {
     if (!slug) return
-    api.get<{ skill: SkillDTO }>(`/api/skills/${slug}`).then((data) => setSkill(data.skill))
+    setError(null)
+    api
+      .get<{ skill: SkillDTO }>(`/api/skills/${slug}`)
+      .then((data) => setSkill(data.skill))
+      .catch((err) => setError(err instanceof ApiError ? err.message : 'Impossible de contacter le serveur.'))
   }, [slug])
 
   useEffect(() => load(), [load])
@@ -39,6 +45,7 @@ export function SkillDetail() {
     }
   }
 
+  if (error) return <ErrorState message={error} onRetry={load} />
   if (!skill) return <FullPageSpinner />
 
   return (

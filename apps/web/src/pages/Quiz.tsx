@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { HelpCircle, Plus, Pencil, Trash2 } from 'lucide-react'
-import { api } from '@/lib/api-client'
+import { api, ApiError } from '@/lib/api-client'
 import { useAuth } from '@/lib/use-auth'
 import { canManageQuiz } from '@/lib/can-manage-quiz'
 import { CATEGORY_LABEL } from '@/lib/category'
@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { ErrorState } from '@/components/ui/ErrorState'
 import { useToast } from '@/lib/use-toast'
 import type { QuizSummaryDTO } from '@hackerhood/types'
 
@@ -16,10 +17,15 @@ export function Quiz() {
   const { user } = useAuth()
   const toast = useToast()
   const [quizzes, setQuizzes] = useState<QuizSummaryDTO[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const isManager = canManageQuiz(user?.role)
 
   function load() {
-    api.get<{ quizzes: QuizSummaryDTO[] }>('/api/quiz').then((data) => setQuizzes(data.quizzes))
+    setError(null)
+    api
+      .get<{ quizzes: QuizSummaryDTO[] }>('/api/quiz')
+      .then((data) => setQuizzes(data.quizzes))
+      .catch((err) => setError(err instanceof ApiError ? err.message : 'Impossible de contacter le serveur.'))
   }
 
   useEffect(load, [])
@@ -32,6 +38,7 @@ export function Quiz() {
     load()
   }
 
+  if (error) return <ErrorState message={error} onRetry={load} />
   if (!quizzes) return <FullPageSpinner />
 
   return (

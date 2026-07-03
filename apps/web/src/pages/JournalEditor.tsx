@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Trash2 } from 'lucide-react'
-import { api } from '@/lib/api-client'
+import { api, ApiError } from '@/lib/api-client'
 import { JOURNAL_TYPE_LABEL, JOURNAL_TEMPLATES } from '@/lib/journal-templates'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { ErrorState } from '@/components/ui/ErrorState'
 import { useToast } from '@/lib/use-toast'
 import type { JournalEntryDTO, JournalEntryType } from '@hackerhood/types'
 
@@ -20,6 +21,8 @@ export function JournalEditor() {
   const toast = useToast()
 
   const [loading, setLoading] = useState(!isNew)
+  const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
   const [saving, setSaving] = useState(false)
   const [title, setTitle] = useState('')
   const [type, setType] = useState<JournalEntryType>('note')
@@ -28,14 +31,18 @@ export function JournalEditor() {
 
   useEffect(() => {
     if (isNew) return
-    api.get<{ entry: JournalEntryDTO }>(`/api/journal/${id}`).then((data) => {
-      setTitle(data.entry.title)
-      setType(data.entry.type)
-      setContent(data.entry.content)
-      setTags(data.entry.tags.join(', '))
-      setLoading(false)
-    })
-  }, [id, isNew])
+    setError(null)
+    api
+      .get<{ entry: JournalEntryDTO }>(`/api/journal/${id}`)
+      .then((data) => {
+        setTitle(data.entry.title)
+        setType(data.entry.type)
+        setContent(data.entry.content)
+        setTags(data.entry.tags.join(', '))
+        setLoading(false)
+      })
+      .catch((err) => setError(err instanceof ApiError ? err.message : 'Impossible de contacter le serveur.'))
+  }, [id, isNew, reloadKey])
 
   function handleTypeChange(newType: JournalEntryType) {
     setType(newType)
@@ -69,6 +76,7 @@ export function JournalEditor() {
     navigate('/journal')
   }
 
+  if (error) return <ErrorState message={error} onRetry={() => setReloadKey((k) => k + 1)} />
   if (loading) return <FullPageSpinner />
 
   return (

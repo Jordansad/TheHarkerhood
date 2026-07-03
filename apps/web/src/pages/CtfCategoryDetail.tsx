@@ -1,22 +1,19 @@
-import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Brain, ListChecks, Wrench, ShieldAlert, Lightbulb } from 'lucide-react'
-import { api } from '@/lib/api-client'
+import { useApiGet } from '@/lib/use-api-get'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { ErrorState } from '@/components/ui/ErrorState'
 import type { CtfCategoryDTO } from '@hackerhood/types'
 
 export function CtfCategoryDetail() {
   const { slug } = useParams<{ slug: string }>()
-  const [category, setCategory] = useState<CtfCategoryDTO | null>(null)
+  const { data, error, retry } = useApiGet<{ category: CtfCategoryDTO }>(slug ? `/api/ctf/categories/${slug}` : null)
 
-  useEffect(() => {
-    if (!slug) return
-    api.get<{ category: CtfCategoryDTO }>(`/api/ctf/categories/${slug}`).then((data) => setCategory(data.category))
-  }, [slug])
-
-  if (!category) return <FullPageSpinner />
+  if (error) return <ErrorState message={error} onRetry={retry} />
+  if (!data) return <FullPageSpinner />
+  const category = data.category
 
   return (
     <div className="space-y-6">

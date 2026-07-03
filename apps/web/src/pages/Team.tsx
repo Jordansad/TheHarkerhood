@@ -1,22 +1,20 @@
-import { useEffect, useState } from 'react'
 import { Users } from 'lucide-react'
-import { api } from '@/lib/api-client'
+import { useApiGet } from '@/lib/use-api-get'
 import { ROLE_LABEL } from '@/lib/user-role'
 import { TIER_COLOR } from '@/lib/tier'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { ErrorState } from '@/components/ui/ErrorState'
 import { cn } from '@/lib/utils'
 import type { TeamMemberDTO } from '@hackerhood/types'
 
 export function Team() {
-  const [members, setMembers] = useState<TeamMemberDTO[] | null>(null)
+  const { data, error, retry } = useApiGet<{ members: TeamMemberDTO[] }>('/api/team')
 
-  useEffect(() => {
-    api.get<{ members: TeamMemberDTO[] }>('/api/team').then((data) => setMembers(data.members))
-  }, [])
-
-  if (!members) return <FullPageSpinner />
+  if (error) return <ErrorState message={error} onRetry={retry} />
+  if (!data) return <FullPageSpinner />
+  const members = data.members
 
   return (
     <div className="space-y-6">

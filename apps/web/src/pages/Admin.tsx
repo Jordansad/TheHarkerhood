@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { ShieldAlert, TrendingUp, Users, Clock } from 'lucide-react'
-import { api } from '@/lib/api-client'
 import { useAuth } from '@/lib/use-auth'
+import { useApiGet } from '@/lib/use-api-get'
 import { canViewAdmin } from '@/lib/can-view-admin'
 import { ROLE_LABEL } from '@/lib/user-role'
 import { TIER_COLOR } from '@/lib/tier'
@@ -10,6 +9,7 @@ import { ACTIVITY_LABEL } from '@/lib/activity-type'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { ErrorState } from '@/components/ui/ErrorState'
 import { cn } from '@/lib/utils'
 import type { AdminOverviewDTO } from '@hackerhood/types'
 
@@ -26,14 +26,11 @@ function timeAgo(iso: string): string {
 
 export function Admin() {
   const { user } = useAuth()
-  const [data, setData] = useState<AdminOverviewDTO | null>(null)
+  const isAdmin = canViewAdmin(user?.role)
+  const { data, error, retry } = useApiGet<AdminOverviewDTO>(isAdmin ? '/api/admin/overview' : null)
 
-  useEffect(() => {
-    if (!canViewAdmin(user?.role)) return
-    api.get<AdminOverviewDTO>('/api/admin/overview').then(setData)
-  }, [user?.role])
-
-  if (!canViewAdmin(user?.role)) return <Navigate to="/dashboard" replace />
+  if (!isAdmin) return <Navigate to="/dashboard" replace />
+  if (error) return <ErrorState message={error} onRetry={retry} />
   if (!data) return <FullPageSpinner />
 
   return (

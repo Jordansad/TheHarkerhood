@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Flame, Target, TrendingUp, Trophy, NotebookPen } from 'lucide-react'
-import { api } from '@/lib/api-client'
 import { useAuth } from '@/lib/use-auth'
+import { useApiGet } from '@/lib/use-api-get'
 import { Card } from '@/components/ui/Card'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { ErrorState } from '@/components/ui/ErrorState'
 import { TIER_COLOR, tierProgressPercent } from '@/lib/tier'
 import { cn } from '@/lib/utils'
 import type { DashboardStatsDTO } from '@hackerhood/types'
@@ -14,13 +14,11 @@ const PORTFOLIO_WRITEUP_GOAL = 10
 
 export function Dashboard() {
   const { user } = useAuth()
-  const [stats, setStats] = useState<DashboardStatsDTO | null>(null)
+  const { data, error, retry } = useApiGet<{ stats: DashboardStatsDTO }>('/api/dashboard/stats')
 
-  useEffect(() => {
-    api.get<{ stats: DashboardStatsDTO }>('/api/dashboard/stats').then((data) => setStats(data.stats))
-  }, [])
-
-  if (!stats) return <FullPageSpinner />
+  if (error) return <ErrorState message={error} onRetry={retry} />
+  if (!data) return <FullPageSpinner />
+  const stats = data.stats
 
   const tierPercent = Math.max(0, Math.min(100, tierProgressPercent(stats.xp, stats.tier)))
   const portfolioPercent = Math.min(100, Math.round((stats.writeupCount / PORTFOLIO_WRITEUP_GOAL) * 100))

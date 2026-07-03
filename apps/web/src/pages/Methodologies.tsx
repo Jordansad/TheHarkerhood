@@ -1,21 +1,19 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ClipboardList, ChevronRight } from 'lucide-react'
-import { api } from '@/lib/api-client'
+import { useApiGet } from '@/lib/use-api-get'
 import { METHODOLOGY_CATEGORY_LABEL } from '@/lib/methodology-category'
 import { Card } from '@/components/ui/Card'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { ErrorState } from '@/components/ui/ErrorState'
 import type { MethodologyDTO } from '@hackerhood/types'
 
 export function Methodologies() {
-  const [methodologies, setMethodologies] = useState<MethodologyDTO[] | null>(null)
+  const { data, error, retry } = useApiGet<{ methodologies: MethodologyDTO[] }>('/api/methodologies')
 
-  useEffect(() => {
-    api.get<{ methodologies: MethodologyDTO[] }>('/api/methodologies').then((data) => setMethodologies(data.methodologies))
-  }, [])
-
-  if (!methodologies) return <FullPageSpinner />
+  if (error) return <ErrorState message={error} onRetry={retry} />
+  if (!data) return <FullPageSpinner />
+  const methodologies = data.methodologies
 
   return (
     <div className="space-y-6">

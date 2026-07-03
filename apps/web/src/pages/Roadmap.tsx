@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CheckCircle2, CircleDashed, CircleDot, Lock } from 'lucide-react'
-import { api } from '@/lib/api-client'
+import { useApiGet } from '@/lib/use-api-get'
 import { CATEGORY_LABEL, PHASE_LABEL, PHASE_ORDER } from '@/lib/category'
 import { Card } from '@/components/ui/Card'
 import { DifficultyBadge, Badge } from '@/components/ui/Badge'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { ErrorState } from '@/components/ui/ErrorState'
 import type { SkillDTO } from '@hackerhood/types'
 
 const STATUS_ICON = {
@@ -15,13 +15,11 @@ const STATUS_ICON = {
 }
 
 export function Roadmap() {
-  const [skills, setSkills] = useState<SkillDTO[] | null>(null)
+  const { data, error, retry } = useApiGet<{ skills: SkillDTO[] }>('/api/skills')
 
-  useEffect(() => {
-    api.get<{ skills: SkillDTO[] }>('/api/skills').then((data) => setSkills(data.skills))
-  }, [])
-
-  if (!skills) return <FullPageSpinner />
+  if (error) return <ErrorState message={error} onRetry={retry} />
+  if (!data) return <FullPageSpinner />
+  const skills = data.skills
 
   const completedIds = new Set(skills.filter((s) => s.progress === 'completed').map((s) => s.id))
   const grouped = skills.reduce<Record<string, SkillDTO[]>>((acc, skill) => {

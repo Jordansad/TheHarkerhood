@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Award } from 'lucide-react'
-import { api } from '@/lib/api-client'
+import { api, ApiError } from '@/lib/api-client'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { cn } from '@/lib/utils'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { ErrorState } from '@/components/ui/ErrorState'
 import type { CertificationDTO, CertificationStatus } from '@hackerhood/types'
 
 const STATUS_OPTIONS: { value: CertificationStatus; label: string }[] = [
@@ -21,16 +22,23 @@ const STATUS_COLOR: Record<CertificationStatus, string> = {
 
 export function Certifications() {
   const [certifications, setCertifications] = useState<CertificationDTO[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
-    api.get<{ certifications: CertificationDTO[] }>('/api/certifications').then((data) => setCertifications(data.certifications))
-  }, [])
+    setError(null)
+    api
+      .get<{ certifications: CertificationDTO[] }>('/api/certifications')
+      .then((data) => setCertifications(data.certifications))
+      .catch((err) => setError(err instanceof ApiError ? err.message : 'Impossible de contacter le serveur.'))
+  }, [reloadKey])
 
   async function updateStatus(id: string, status: CertificationStatus) {
     const data = await api.patch<{ certifications: CertificationDTO[] }>(`/api/certifications/${id}/status`, { status })
     setCertifications(data.certifications)
   }
 
+  if (error) return <ErrorState message={error} onRetry={() => setReloadKey((k) => k + 1)} />
   if (!certifications) return <FullPageSpinner />
 
   return (

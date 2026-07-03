@@ -1,24 +1,21 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, CheckCircle2, XCircle } from 'lucide-react'
 import { api } from '@/lib/api-client'
+import { useApiGet } from '@/lib/use-api-get'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { ErrorState } from '@/components/ui/ErrorState'
 import { cn } from '@/lib/utils'
 import type { QuizDTO, QuizSubmitResultDTO } from '@hackerhood/types'
 
 export function QuizTake() {
   const { id } = useParams<{ id: string }>()
-  const [quiz, setQuiz] = useState<QuizDTO | null>(null)
+  const { data, error, retry } = useApiGet<{ quiz: QuizDTO }>(id ? `/api/quiz/${id}` : null)
   const [answers, setAnswers] = useState<Record<string, number>>({})
   const [result, setResult] = useState<QuizSubmitResultDTO | null>(null)
   const [submitting, setSubmitting] = useState(false)
-
-  useEffect(() => {
-    if (!id) return
-    api.get<{ quiz: QuizDTO }>(`/api/quiz/${id}`).then((data) => setQuiz(data.quiz))
-  }, [id])
 
   async function handleSubmit() {
     if (!id) return
@@ -31,7 +28,9 @@ export function QuizTake() {
     }
   }
 
-  if (!quiz) return <FullPageSpinner />
+  if (error) return <ErrorState message={error} onRetry={retry} />
+  if (!data) return <FullPageSpinner />
+  const quiz = data.quiz
 
   const resultByQuestionId = new Map(result?.results.map((r) => [r.questionId, r]) ?? [])
   const allAnswered = quiz.questions.every((q) => answers[q.id] !== undefined)

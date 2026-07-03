@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Trash2 } from 'lucide-react'
-import { api } from '@/lib/api-client'
+import { api, ApiError } from '@/lib/api-client'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { ErrorState } from '@/components/ui/ErrorState'
 import { useToast } from '@/lib/use-toast'
 import type { WikiPageDTO } from '@hackerhood/types'
 
@@ -17,6 +18,8 @@ export function WikiEditor() {
   const toast = useToast()
 
   const [loading, setLoading] = useState(!isNew)
+  const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
   const [saving, setSaving] = useState(false)
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('')
@@ -24,13 +27,17 @@ export function WikiEditor() {
 
   useEffect(() => {
     if (isNew) return
-    api.get<{ page: WikiPageDTO }>(`/api/wiki/${slug}`).then((data) => {
-      setTitle(data.page.title)
-      setCategory(data.page.category)
-      setContent(data.page.content)
-      setLoading(false)
-    })
-  }, [slug, isNew])
+    setError(null)
+    api
+      .get<{ page: WikiPageDTO }>(`/api/wiki/${slug}`)
+      .then((data) => {
+        setTitle(data.page.title)
+        setCategory(data.page.category)
+        setContent(data.page.content)
+        setLoading(false)
+      })
+      .catch((err) => setError(err instanceof ApiError ? err.message : 'Impossible de contacter le serveur.'))
+  }, [slug, isNew, reloadKey])
 
   async function handleSave() {
     setSaving(true)
@@ -58,6 +65,7 @@ export function WikiEditor() {
     navigate('/wiki')
   }
 
+  if (error) return <ErrorState message={error} onRetry={() => setReloadKey((k) => k + 1)} />
   if (loading) return <FullPageSpinner />
 
   return (

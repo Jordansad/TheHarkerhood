@@ -1,20 +1,18 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { BookOpen, Plus } from 'lucide-react'
-import { api } from '@/lib/api-client'
+import { useApiGet } from '@/lib/use-api-get'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { ErrorState } from '@/components/ui/ErrorState'
 import type { WikiPageSummaryDTO } from '@hackerhood/types'
 
 export function Wiki() {
-  const [pages, setPages] = useState<WikiPageSummaryDTO[] | null>(null)
+  const { data, error, retry } = useApiGet<{ pages: WikiPageSummaryDTO[] }>('/api/wiki')
 
-  useEffect(() => {
-    api.get<{ pages: WikiPageSummaryDTO[] }>('/api/wiki').then((data) => setPages(data.pages))
-  }, [])
-
-  if (!pages) return <FullPageSpinner />
+  if (error) return <ErrorState message={error} onRetry={retry} />
+  if (!data) return <FullPageSpinner />
+  const pages = data.pages
 
   const grouped = pages.reduce<Record<string, WikiPageSummaryDTO[]>>((acc, p) => {
     ;(acc[p.category] ??= []).push(p)

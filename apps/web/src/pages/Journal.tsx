@@ -1,22 +1,20 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { NotebookPen, Plus } from 'lucide-react'
-import { api } from '@/lib/api-client'
+import { useApiGet } from '@/lib/use-api-get'
 import { JOURNAL_TYPE_LABEL } from '@/lib/journal-templates'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { ErrorState } from '@/components/ui/ErrorState'
 import type { JournalEntrySummaryDTO } from '@hackerhood/types'
 
 export function Journal() {
-  const [entries, setEntries] = useState<JournalEntrySummaryDTO[] | null>(null)
+  const { data, error, retry } = useApiGet<{ entries: JournalEntrySummaryDTO[] }>('/api/journal')
 
-  useEffect(() => {
-    api.get<{ entries: JournalEntrySummaryDTO[] }>('/api/journal').then((data) => setEntries(data.entries))
-  }, [])
-
-  if (!entries) return <FullPageSpinner />
+  if (error) return <ErrorState message={error} onRetry={retry} />
+  if (!data) return <FullPageSpinner />
+  const entries = data.entries
 
   return (
     <div className="space-y-6">

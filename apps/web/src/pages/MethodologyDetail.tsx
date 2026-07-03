@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, CheckSquare, Square, ShieldAlert, ThumbsUp, PackageCheck, Wrench } from 'lucide-react'
-import { api } from '@/lib/api-client'
+import { api, ApiError } from '@/lib/api-client'
 import { METHODOLOGY_CATEGORY_LABEL } from '@/lib/methodology-category'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { ErrorState } from '@/components/ui/ErrorState'
 import { cn } from '@/lib/utils'
 import type { MethodologyDTO } from '@hackerhood/types'
 
@@ -14,10 +15,15 @@ export function MethodologyDetail() {
   const { slug } = useParams<{ slug: string }>()
   const [methodology, setMethodology] = useState<MethodologyDTO | null>(null)
   const [updatingStepId, setUpdatingStepId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(() => {
     if (!slug) return
-    api.get<{ methodology: MethodologyDTO }>(`/api/methodologies/${slug}`).then((data) => setMethodology(data.methodology))
+    setError(null)
+    api
+      .get<{ methodology: MethodologyDTO }>(`/api/methodologies/${slug}`)
+      .then((data) => setMethodology(data.methodology))
+      .catch((err) => setError(err instanceof ApiError ? err.message : 'Impossible de contacter le serveur.'))
   }, [slug])
 
   useEffect(() => load(), [load])
@@ -33,6 +39,7 @@ export function MethodologyDetail() {
     }
   }
 
+  if (error) return <ErrorState message={error} onRetry={load} />
   if (!methodology) return <FullPageSpinner />
 
   return (
