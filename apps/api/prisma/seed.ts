@@ -1,6 +1,5 @@
-import { PrismaClient, SkillCategory, SkillDifficulty } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { SkillCategory, SkillDifficulty } from '@prisma/client'
+import { prisma } from '../src/lib/prisma'
 
 interface SkillSeed {
   slug: string
