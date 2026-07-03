@@ -176,6 +176,96 @@ const quizzes = [
       { prompt: 'Quel outil sert à cartographier les relations de confiance dans un AD ?', choices: ['Wireshark', 'BloodHound', 'Nmap', 'Burp Suite'], correctIndex: 1, explanation: "BloodHound visualise les relations et chemins d'attaque possibles au sein d'un domaine Active Directory." },
     ],
   },
+  {
+    title: 'Windows — Bases',
+    category: SkillCategory.windows,
+    questions: [
+      { prompt: "Quelle console permet d'exécuter des scripts d'administration Windows avancés ?", choices: ['CMD', 'PowerShell', 'Regedit', 'Explorer'], correctIndex: 1, explanation: 'PowerShell est le shell orienté objet permettant automatisation et administration avancée de Windows.' },
+      { prompt: "Où sont stockées les définitions de permissions sur un fichier Windows (NTFS) ?", choices: ['Le registre', "L'ACL (liste de contrôle d'accès)", 'Le fichier hosts', 'Le MBR'], correctIndex: 1, explanation: "Les permissions NTFS sont définies via une ACL (Access Control List) attachée à chaque objet." },
+      { prompt: 'Quelle base de données centralise la configuration système Windows ?', choices: ['Le registre (Registry)', '/etc/passwd', 'Active Directory uniquement', 'Le Panneau de configuration'], correctIndex: 0, explanation: 'Le registre Windows stocke la configuration système, matérielle et logicielle sous forme de clés/valeurs.' },
+    ],
+  },
+  {
+    title: 'Scripting — Bash & Python',
+    category: SkillCategory.scripting,
+    questions: [
+      { prompt: 'En Bash, quelle structure permet de répéter une action tant qu\'une condition est vraie ?', choices: ['if', 'while', 'case', 'function'], correctIndex: 1, explanation: 'La boucle `while` exécute un bloc tant que sa condition reste vraie.' },
+      { prompt: "En Python, quel module standard permet de faire des requêtes HTTP ?", choices: ['os', 'socket bas niveau uniquement', 'requests (tiers) ou urllib (standard)', 'sys'], correctIndex: 2, explanation: 'requests (bibliothèque tierce très populaire) ou urllib (module standard) permettent de faire des requêtes HTTP en Python.' },
+      { prompt: 'Quel symbole Bash redirige la sortie standard vers un fichier en écrasant son contenu ?', choices: ['>>', '>', '|', '<'], correctIndex: 1, explanation: '`>` redirige et écrase ; `>>` redirige en ajoutant à la fin du fichier.' },
+    ],
+  },
+  {
+    title: 'Élévation de privilèges',
+    category: SkillCategory.privesc,
+    questions: [
+      { prompt: 'Que permet un binaire avec le bit SUID activé sous Linux ?', choices: ["Il s'exécute avec les droits du propriétaire du fichier", "Il devient illisible", 'Il se supprime après exécution', "Il ne peut plus être modifié"], correctIndex: 0, explanation: 'Le bit SUID fait exécuter le binaire avec les privilèges de son propriétaire (souvent root), ce qui peut être abusé si mal configuré.' },
+      { prompt: 'Quel fichier liste les commandes qu\'un utilisateur peut exécuter en tant que root sous Linux ?', choices: ['/etc/sudoers', '/etc/passwd', '/etc/shadow', '/etc/crontab'], correctIndex: 0, explanation: '/etc/sudoers définit les règles de qui peut utiliser sudo et avec quelles restrictions.' },
+      { prompt: 'Sous Windows, quel privilège mal configuré peut permettre une élévation via un service ?', choices: ['Un mot de passe faible', 'Des permissions excessives sur le binaire du service', 'Un pare-feu désactivé', 'Un thème sombre activé'], correctIndex: 1, explanation: "Si un utilisateur non-admin peut modifier le binaire ou la configuration d'un service qui s'exécute en tant que SYSTEM, il peut en abuser pour élever ses privilèges." },
+    ],
+  },
+  {
+    title: 'OSINT — Techniques',
+    category: SkillCategory.osint,
+    questions: [
+      { prompt: "Qu'est-ce qu'un 'Google dork' ?", choices: ['Un virus', 'Une requête de recherche avancée utilisant des opérateurs spécifiques', 'Un type de pare-feu', 'Un outil de brute-force'], correctIndex: 1, explanation: "Un Google dork utilise des opérateurs de recherche avancés (site:, filetype:, intitle:...) pour trouver des informations spécifiques exposées publiquement." },
+      { prompt: 'Quel outil permet de découvrir des services et appareils exposés sur Internet ?', choices: ['Shodan', 'Photoshop', 'Excel', 'Notepad++'], correctIndex: 0, explanation: 'Shodan indexe les appareils et services connectés à Internet, très utilisé en reconnaissance OSINT.' },
+      { prompt: "Pourquoi vérifier les métadonnées d'un document ou d'une image en OSINT ?", choices: ["Elles n'ont aucune utilité", 'Elles peuvent révéler auteur, logiciel, position GPS ou date de création', 'Elles ralentissent le fichier', "Elles chiffrent le contenu"], correctIndex: 1, explanation: "Les métadonnées (EXIF pour les images, propriétés de document) peuvent exposer des informations sensibles non visibles directement." },
+    ],
+  },
+  {
+    title: 'Exploitation — Concepts',
+    category: SkillCategory.exploitation,
+    questions: [
+      { prompt: "Dans Metasploit, qu'est-ce qu'un 'payload' ?", choices: ['Le rapport final du test', 'Le code exécuté sur la cible après exploitation réussie', 'Le scanner de ports', "Le firewall de la cible"], correctIndex: 1, explanation: "Le payload est le code qui s'exécute sur le système cible une fois l'exploit réussi (ex: reverse shell, meterpreter)." },
+      { prompt: "Qu'est-ce qu'un 'reverse shell' ?", choices: ["Un shell qui s'auto-détruit", 'Une connexion initiée par la machine compromise vers l\'attaquant', 'Un antivirus', 'Un shell en lecture seule'], correctIndex: 1, explanation: "Un reverse shell fait en sorte que la machine cible initie la connexion vers l'attaquant, contournant souvent les restrictions de pare-feu entrant." },
+      { prompt: "Que signifie 'post-exploitation' ?", choices: ["La phase avant l'attaque", 'Les actions menées après avoir obtenu un accès initial (persistance, pivot, collecte)', 'La rédaction du rapport uniquement', "La sauvegarde du système"], correctIndex: 1, explanation: "La post-exploitation regroupe les actions réalisées après une compromission initiale : élévation de privilèges, persistance, mouvement latéral, exfiltration." },
+    ],
+  },
+  {
+    title: 'Blue Team & SOC',
+    category: SkillCategory.blue_team,
+    questions: [
+      { prompt: 'Que signifie SIEM ?', choices: ['Security Information and Event Management', 'System Internal Encryption Module', 'Secure Internet Email Monitor', 'Server Identity and Endpoint Manager'], correctIndex: 0, explanation: "Un SIEM centralise, corrèle et alerte sur les événements de sécurité provenant de multiples sources." },
+      { prompt: "Qu'est-ce que le 'triage' dans un SOC ?", choices: ["Supprimer tous les logs", 'Prioriser et qualifier rapidement les alertes selon leur criticité', 'Redémarrer les serveurs', 'Chiffrer le trafic'], correctIndex: 1, explanation: "Le triage consiste à évaluer rapidement chaque alerte pour déterminer sa gravité et décider des actions à mener." },
+      { prompt: 'Quel référentiel est couramment utilisé pour cartographier les tactiques et techniques des attaquants ?', choices: ['OWASP Top 10', 'MITRE ATT&CK', 'CVSS', 'ISO 27001'], correctIndex: 1, explanation: "MITRE ATT&CK est une base de connaissances des tactiques, techniques et procédures (TTPs) utilisées par les attaquants, très utilisée en Blue Team." },
+    ],
+  },
+  {
+    title: 'Cloud Security',
+    category: SkillCategory.cloud,
+    questions: [
+      { prompt: 'Que signifie IAM dans un contexte cloud ?', choices: ['Internet Access Manager', 'Identity and Access Management', 'Internal Application Monitor', 'Instance Availability Metric'], correctIndex: 1, explanation: "IAM (Identity and Access Management) gère les identités et permissions d'accès aux ressources cloud." },
+      { prompt: "Quel est un risque fréquent lié aux buckets de stockage cloud (ex: S3) ?", choices: ['Ils sont toujours gratuits', 'Une mauvaise configuration peut les rendre publiquement accessibles', 'Ils ne peuvent pas contenir de fichiers', "Ils sont automatiquement chiffrés"], correctIndex: 1, explanation: "Une permission trop permissive (bucket public) est l'une des causes les plus fréquentes de fuite de données dans le cloud." },
+      { prompt: "Quel principe de sécurité recommande de n'accorder que les permissions strictement nécessaires ?", choices: ['Défense en profondeur', 'Moindre privilège', 'Sécurité par l\'obscurité', 'Fail-open'], correctIndex: 1, explanation: "Le principe du moindre privilège limite chaque identité aux seules permissions nécessaires à sa fonction." },
+    ],
+  },
+  {
+    title: 'Reverse Engineering',
+    category: SkillCategory.reverse_engineering,
+    questions: [
+      { prompt: "Quelle est la différence entre analyse statique et dynamique d'un binaire ?", choices: ["Il n'y a aucune différence", "La statique examine le code sans l'exécuter, la dynamique l'observe en cours d'exécution", 'La dynamique est toujours plus rapide', 'La statique nécessite un débogueur'], correctIndex: 1, explanation: "L'analyse statique étudie le binaire sans l'exécuter (désassemblage, strings), la dynamique observe son comportement réel à l'exécution (débogueur, tracer)." },
+      { prompt: 'Quel outil est une référence gratuite pour la rétro-ingénierie de binaires ?', choices: ['Ghidra', 'Photoshop', 'Wireshark', 'Nmap'], correctIndex: 0, explanation: "Ghidra (NSA, open source) est un désassembleur/décompilateur très utilisé en reverse engineering." },
+      { prompt: "Que permet un débogueur comme x64dbg ?", choices: ['Compiler du code source', "Exécuter le programme pas à pas et inspecter son état mémoire", 'Scanner un réseau', 'Chiffrer un fichier'], correctIndex: 1, explanation: "Un débogueur permet d'exécuter un programme instruction par instruction et d'observer/modifier son état (registres, mémoire)." },
+    ],
+  },
+  {
+    title: 'Analyse de malwares',
+    category: SkillCategory.malware_analysis,
+    questions: [
+      { prompt: "Qu'est-ce qu'un IOC en analyse de malware ?", choices: ["Un indicateur de compromission (hash, IP, domaine...)", 'Un type de virus', 'Un antivirus', 'Un protocole réseau'], correctIndex: 0, explanation: "Un IOC (Indicator of Compromise) est un artefact observable indiquant une intrusion potentielle : hash de fichier, IP, domaine, clé de registre..." },
+      { prompt: "Pourquoi analyser un malware dans un environnement sandboxé ?", choices: ["Pour le rendre plus rapide", "Pour observer son comportement sans risquer d'infecter le système réel", "Ce n'est jamais nécessaire", "Pour le compiler"], correctIndex: 1, explanation: "Une sandbox isole l'exécution du malware pour observer son comportement sans compromettre l'environnement de travail." },
+      { prompt: "Que permettent les règles YARA ?", choices: ['Chiffrer des fichiers', 'Identifier et classifier des malwares selon des motifs définis', 'Scanner un réseau WiFi', 'Configurer un pare-feu'], correctIndex: 1, explanation: "YARA permet de définir des règles de détection basées sur des motifs (chaînes, structures) pour identifier des familles de malwares." },
+    ],
+  },
+  {
+    title: 'Sécurité API',
+    category: SkillCategory.api_security,
+    questions: [
+      { prompt: "Quel est un risque classique du Top 10 OWASP API ?", choices: ['Broken Object Level Authorization (BOLA)', 'Trop de couleurs dans l\'interface', 'Police de caractère non lisible', 'Absence de favicon'], correctIndex: 0, explanation: "BOLA (accès à des objets d'autres utilisateurs via manipulation d'ID) est la vulnérabilité n°1 de l'OWASP API Top 10." },
+      { prompt: 'Quel type de jeton est couramment utilisé pour authentifier les appels API modernes ?', choices: ['JWT (JSON Web Token)', 'Un simple mot de passe en clair dans l\'URL', 'Aucune authentification n\'est nécessaire', 'Un cookie de session uniquement'], correctIndex: 0, explanation: "Les JWT sont largement utilisés pour transmettre des informations d'authentification/autorisation de façon stateless entre client et API." },
+      { prompt: "Pourquoi le rate limiting est-il important pour une API ?", choices: ["Il améliore le design visuel", 'Il protège contre les abus, le brute-force et le déni de service', "Il n'a aucun intérêt en sécurité", 'Il chiffre les données'], correctIndex: 1, explanation: "Le rate limiting limite le nombre de requêtes par client, protégeant contre le brute-force, le scraping abusif et certains DoS applicatifs." },
+    ],
+  },
 ]
 
 export async function seedManualContent() {

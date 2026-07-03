@@ -255,6 +255,28 @@ export interface QuizSubmitResultDTO {
   results: QuizAnswerResultDTO[]
 }
 
+export interface QuizQuestionEditDTO {
+  id: string
+  prompt: string
+  choices: string[]
+  correctIndex: number
+  explanation: string
+}
+
+export interface QuizEditDTO {
+  id: string
+  title: string
+  category: SkillCategory
+  questions: QuizQuestionEditDTO[]
+}
+
+export interface QuizSummaryDTO {
+  id: string
+  title: string
+  category: SkillCategory
+  questionCount: number
+}
+
 export interface TeamMemberDTO {
   id: string
   displayName: string

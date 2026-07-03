@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/use-auth'
 import { ToastProvider } from '@/lib/toast-context'
 import { AuthGuard } from '@/components/layout/AuthGuard'
 import { FullPageSpinner } from '@/components/ui/Spinner'
+import { Home } from '@/pages/Home'
 import { Login } from '@/pages/Login'
 import { Register } from '@/pages/Register'
 import { Dashboard } from '@/pages/Dashboard'
@@ -22,6 +23,7 @@ import { Certifications } from '@/pages/Certifications'
 import { Team } from '@/pages/Team'
 import { Quiz } from '@/pages/Quiz'
 import { QuizTake } from '@/pages/QuizTake'
+import { QuizEditor } from '@/pages/QuizEditor'
 import { Mentor } from '@/pages/Mentor'
 import { Charte } from '@/pages/Charte'
 
@@ -35,6 +37,7 @@ function PublicOnly({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   return (
     <Routes>
+      <Route path="/" element={<PublicOnly><Home /></PublicOnly>} />
       <Route path="/login" element={<PublicOnly><Login /></PublicOnly>} />
       <Route path="/register" element={<PublicOnly><Register /></PublicOnly>} />
 
@@ -54,12 +57,13 @@ function AppRoutes() {
         <Route path="/certifications" element={<Certifications />} />
         <Route path="/equipe" element={<Team />} />
         <Route path="/quiz" element={<Quiz />} />
+        <Route path="/quiz/:id/editer" element={<QuizEditor />} />
         <Route path="/quiz/:id" element={<QuizTake />} />
         <Route path="/mentor" element={<Mentor />} />
         <Route path="/charte" element={<Charte />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }

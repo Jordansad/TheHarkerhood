@@ -12,7 +12,7 @@ export const env = {
   databaseUrl: required('DATABASE_URL'),
   jwtSecret: required('JWT_SECRET'),
   webOrigin: required('WEB_ORIGIN', 'http://localhost:5173'),
-  anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+  geminiApiKey: process.env.GEMINI_API_KEY,
   adminEmails: (process.env.ADMIN_EMAILS ?? '')
     .split(',')
     .map((e) => e.trim().toLowerCase())

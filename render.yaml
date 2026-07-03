@@ -14,5 +14,7 @@ services:
         sync: false
       - key: WEB_ORIGIN
         sync: false
-      - key: ANTHROPIC_API_KEY
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: ADMIN_EMAILS
         sync: false

@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenAI } from '@google/genai'
 import { prisma } from '../lib/prisma'
 import { env } from '../lib/env'
 import { NotFoundError, AppError } from '../lib/errors'
@@ -20,11 +20,13 @@ usage réel contre des tiers. Si une question sort de ce cadre, redirige polimen
 
 Sois direct, concret, et pédagogue — comme un mentor expérimenté qui a fait le chemin.`
 
-function getClient(): Anthropic {
-  if (!env.anthropicApiKey) {
+const MODEL = 'gemini-2.5-flash'
+
+function getClient(): GoogleGenAI {
+  if (!env.geminiApiKey) {
     throw new AppError(503, "Le Mentor IA n'est pas encore configuré (clé API manquante).")
   }
-  return new Anthropic({ apiKey: env.anthropicApiKey })
+  return new GoogleGenAI({ apiKey: env.geminiApiKey })
 }
 
 export async function listConversations(userId: string): Promise<AiConversationSummaryDTO[]> {
@@ -65,14 +67,16 @@ export async function sendMessage(userId: string, conversationId: string | undef
 
   const history = [...conversation.messages, { role: 'user' as const, content }]
 
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-5',
-    max_tokens: 1024,
-    system: SYSTEM_PROMPT,
-    messages: history.map((m) => ({ role: m.role, content: m.content })),
+  const response = await client.models.generateContent({
+    model: MODEL,
+    contents: history.map((m) => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }],
+    })),
+    config: { systemInstruction: SYSTEM_PROMPT },
   })
 
-  const assistantText = response.content.filter((b) => b.type === 'text').map((b) => b.text).join('\n')
+  const assistantText = response.text ?? "Désolé, je n'ai pas pu générer de réponse."
   await prisma.aiMessage.create({ data: { conversationId: conversation.id, role: 'assistant', content: assistantText } })
 
   return getConversation(userId, conversation.id)

@@ -13,6 +13,12 @@ export class UnauthorizedError extends AppError {
   }
 }
 
+export class ForbiddenError extends AppError {
+  constructor(message = 'Accès refusé') {
+    super(403, message)
+  }
+}
+
 export class NotFoundError extends AppError {
   constructor(message = 'Ressource introuvable') {
     super(404, message)

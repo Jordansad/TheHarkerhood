@@ -1,7 +1,9 @@
 import type { NextFunction, Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 import { env } from '../lib/env'
-import { UnauthorizedError } from '../lib/errors'
+import { UnauthorizedError, ForbiddenError } from '../lib/errors'
+import { prisma } from '../lib/prisma'
+import type { UserRole } from '@prisma/client'
 
 export const AUTH_COOKIE = 'hackerhood_token'
 
@@ -20,4 +22,18 @@ export function requireAuth(req: AuthedRequest, _res: Response, next: NextFuncti
   } catch {
     next(new UnauthorizedError('Session invalide ou expirée'))
   }
+}
+
+const QUIZ_MANAGER_ROLES: UserRole[] = ['founder', 'co_founder', 'training_manager']
+
+export function requireQuizManager(req: AuthedRequest, _res: Response, next: NextFunction) {
+  prisma.user
+    .findUnique({ where: { id: req.userId! }, select: { role: true } })
+    .then((user) => {
+      if (!user || !QUIZ_MANAGER_ROLES.includes(user.role)) {
+        return next(new ForbiddenError("Réservé aux responsables de formation."))
+      }
+      next()
+    })
+    .catch(next)
 }

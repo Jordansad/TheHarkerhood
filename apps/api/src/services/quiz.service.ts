@@ -1,6 +1,7 @@
 import { prisma } from '../lib/prisma'
 import { NotFoundError, BadRequestError } from '../lib/errors'
 import type { QuizDTO, QuizSubmitResultDTO } from '@hackerhood/types'
+import type { SkillCategory } from '@prisma/client'
 
 export async function listQuizzes() {
   const quizzes = await prisma.quiz.findMany({ include: { _count: { select: { questions: true } } } })
@@ -39,4 +40,52 @@ export async function submitQuiz(userId: string, quizId: string, answers: Record
     total: quiz.questions.length,
     results: results.map(({ questionId, correctIndex, explanation }) => ({ questionId, correctIndex, explanation })),
   }
+}
+
+export interface QuestionInput {
+  prompt: string
+  choices: string[]
+  correctIndex: number
+  explanation: string
+}
+
+export async function getQuizForEditing(id: string) {
+  const quiz = await prisma.quiz.findUnique({ where: { id }, include: { questions: true } })
+  if (!quiz) throw new NotFoundError('Quiz introuvable.')
+  return quiz
+}
+
+export async function createQuiz(title: string, category: SkillCategory, questions: QuestionInput[]) {
+  const quiz = await prisma.quiz.create({
+    data: {
+      title,
+      category,
+      questions: { create: questions.map((q) => ({ ...q, choices: q.choices })) },
+    },
+    include: { questions: true },
+  })
+  return quiz
+}
+
+export async function updateQuiz(id: string, title: string, category: SkillCategory, questions: QuestionInput[]) {
+  const existing = await prisma.quiz.findUnique({ where: { id } })
+  if (!existing) throw new NotFoundError('Quiz introuvable.')
+
+  await prisma.quizQuestion.deleteMany({ where: { quizId: id } })
+  const quiz = await prisma.quiz.update({
+    where: { id },
+    data: {
+      title,
+      category,
+      questions: { create: questions.map((q) => ({ ...q, choices: q.choices })) },
+    },
+    include: { questions: true },
+  })
+  return quiz
+}
+
+export async function deleteQuiz(id: string) {
+  const existing = await prisma.quiz.findUnique({ where: { id } })
+  if (!existing) throw new NotFoundError('Quiz introuvable.')
+  await prisma.quiz.delete({ where: { id } })
 }
