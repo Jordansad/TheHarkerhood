@@ -1,40 +1,66 @@
 # The Hackerhood — État du projet
 
 Plateforme communautaire d'apprentissage cybersécurité. Monorepo npm workspaces :
-`apps/web` (React/Vite, sur Vercel), `apps/api` (Express/Prisma, sur Render — **suspendu, voir migration**), `packages/types`.
+`apps/web` (React/Vite), `apps/api` (Express/Prisma), `packages/types`.
 
 Repo : `git@github.com:Jordansad/TheHarkerhood.git`
-Web (Vercel, OK) : https://the-harkerhood-web.vercel.app
-API (Render, suspendu) : https://theharkerhood.onrender.com
+Web (Vercel) : https://the-harkerhood-web.vercel.app
+API (Vercel, migré depuis Render) : https://the-harkerhood-api-two.vercel.app
 
 ## État fonctionnel : toutes les phases du plan initial sont livrées
 
 - Roadmap 12 mois, méthodologies + checklists, système de progression Bronze→Legend, journal/wiki, CTF + certifications + annuaire équipe, quiz (+ gestion admin des quiz), Mentor IA (Google Gemini, gratuit), dashboard fondateur (`/admin`), branding (logo en filigrane partout), design animé/futuriste.
 - Rôles : `UserRole` founder→member, bootstrap via `ADMIN_EMAILS`.
-- DB : Neon Postgres, accès via `@prisma/adapter-pg` (contournement d'un souci IPv6 local, sans rapport avec Render).
+- DB : Neon Postgres, accès via `@prisma/adapter-pg`.
 
-## Bugs récents corrigés (tous poussés, commits `116f2eb` → `9b593d2`)
+## Bugs récents corrigés (commits `116f2eb` → `9b593d2`)
 
-1. Route racine `/` manquante → causait un faux "down" sur UptimeRobot (404 au lieu de 200). Fixé.
+1. Route racine `/` manquante → causait un faux "down" sur UptimeRobot (404 au lieu de 200). Fixé (fonctionne sur Render ; sur Vercel `/` plante encore pour une raison non résolue, voir plus bas — non bloquant).
 2. Navigation mobile : sidebar fixe 240px sans repli → écrasait l'écran sur téléphone. Remplacée par un tiroir + bouton hamburger.
 3. Pages bloquées en chargement infini si une requête API échouait (aucun `.catch()` nulle part) → ajout de `useApiGet` + `ErrorState` partout.
-4. **Bug racine du "dashboard vide sur mobile"** : cookie de session cross-site (Vercel↔Render, `sameSite=None`) refusé par les navigateurs mobiles (Safari surtout), même en HTTPS. Fix : le login/register renvoient maintenant aussi un `token` dans le corps de la réponse, stocké côté client et envoyé via header `Authorization: Bearer` sur chaque requête (le cookie reste en place en complément). Testé et confirmé en prod sans aucun cookie.
+4. **Bug racine du "dashboard vide sur mobile"** : cookie de session cross-site (`sameSite=None`) refusé par les navigateurs mobiles (Safari surtout), même en HTTPS. Fix : login/register renvoient aussi un `token` dans le corps de la réponse, stocké côté client et envoyé via header `Authorization: Bearer` sur chaque requête (le cookie reste en place en complément).
 
-## 🔴 EN COURS : migration hors de Render (suspendu pour dépassement du quota gratuit)
+## ✅ TERMINÉ : migration hors de Render vers Vercel
 
-**Cause** : Render offre 750h/mois **partagées entre tous les services gratuits du compte**. Trois services tournaient 24h/24 (`theharkerhood`, `nationalfinance`, `verification-site-xj7p`) → ~2200h/mois nécessaires à eux trois → dépassement et suspension avant la fin de chaque mois. Va se reproduire tant que rien ne change.
+**Pourquoi Render a été abandonné** : le plan gratuit offre 750h/mois **partagées entre tous les services gratuits du compte**. Trois services (`theharkerhood`, `nationalfinance`, `verification-site-xj7p`) tournaient 24h/24 → ~2200h/mois nécessaires à eux trois → suspension récurrente avant la fin de chaque mois.
 
-**Décision prise avec l'utilisateur** : migrer les 3 services vers un unique VPS **Oracle Cloud "Always Free"** (gratuit à vie, pas de compteur d'heures) plutôt que Railway (crédit $5/mois insuffisant) ou réduire le nombre de services actifs.
+**Pourquoi Oracle Cloud a été abandonné** : leur vérification anti-fraude à la création de compte rejette systématiquement les cartes prépayées/virtuelles. L'utilisateur n'a pas pu créer de compte.
 
-**Où ça en est** :
-- Clé SSH dédiée déjà générée en local : `~/.ssh/oracle_vps` (publique : `~/.ssh/oracle_vps.pub`).
-- L'utilisateur est en train de créer son compte Oracle Cloud et de provisionner l'instance (Ubuntu, `VM.Standard.A1.Flex`, 2 OCPU / 12 GB RAM, la clé SSH ci-dessus ajoutée à la création).
-- **Prochaine étape dès que l'utilisateur donne l'IP publique** : se connecter en SSH, installer Docker + Docker Compose + un reverse proxy (Caddy, pour HTTPS automatique), puis déployer les 3 apps :
-  - `hackerhood` : `apps/api` (Express/Prisma) — la DB reste sur Neon (externe, pas concernée par la migration), donc pas de volume de données à migrer pour ce service, juste redéployer le conteneur API et pointer `VITE_API_URL` du front Vercel vers la nouvelle URL.
-  - `nationalfinance` (repo `banque-en-ligne`, local `/home/jordan/Documents/nationalfinance`) : Express + **better-sqlite3** (fichier `nationalfinance.db` en local sur le filesystem du service) — attention, sur Render free le filesystem est éphémère donc ces données étaient déjà à risque de disparaître à chaque redeploy ; le VPS Oracle règle ça définitivement puisque le disque est persistant. Bien migrer/sauvegarder le `.db` existant si des données réelles doivent être conservées.
-  - `verification-site` (repo `verification-site`, local `/home/jordan/Documents/verification-site`) : même stack que nationalfinance (Express + better-sqlite3 + `verification.db`), même remarque sur la persistance.
-- Il faudra aussi mettre à jour les moniteurs UptimeRobot vers les nouvelles URLs une fois la migration faite.
+**Solution retenue : migrer chaque service vers Vercel** (déjà utilisé pour les fronts, aucune carte à re-vérifier, pas de compteur d'heures — Vercel facture à l'exécution/bande passante, très généreux en Hobby gratuit).
+
+### Comment l'API Express a été adaptée pour Vercel (référence pour les 2 autres projets)
+
+1. `apps/api/src/app.ts` : la création de l'app Express (routes, middlewares), **sans** `app.listen()`, exportée en named export `app`.
+2. `apps/api/src/index.ts` : entrée locale/dev uniquement — importe `app` et appelle `app.listen()`.
+3. `apps/api/api/index.ts` : point d'entrée serverless Vercel — `import { app } from '../src/app'; export default app;`. Une app Express est directement utilisable comme handler Vercel (signature `(req, res)` compatible).
+4. `apps/api/vercel.json` :
+   ```json
+   {
+     "functions": { "api/index.ts": { "maxDuration": 30 } },
+     "rewrites": [
+       { "source": "/", "destination": "/api/index" },
+       { "source": "/(.*)", "destination": "/api/index" }
+     ]
+   }
+   ```
+   - Le bloc `functions` est **obligatoire** : sans lui, Vercel détecte aussi `src/app.ts` comme une fonction candidate (car importé) et plante toutes les requêtes avec `Invalid export found in module`.
+   - `functions.<path>` ne peut pas être un objet vide `{}` (schéma Vercel récent) → mettre au moins une propriété (`maxDuration` ici).
+   - Ajouter `package.json#scripts.vercel-build: "prisma generate"` (Vercel l'exécute automatiquement s'il existe).
+5. **Connu et non résolu** : le chemin racine `/` seul renvoie `FUNCTION_INVOCATION_FAILED` sur Vercel malgré la règle de rewrite dédiée, alors que `/health` et toutes les routes `/api/*` fonctionnent parfaitement. Cause exacte non identifiée (testé : pas un problème de cache CDN, `x-vercel-cache: MISS` à chaque fois). **Non bloquant** — l'app web n'appelle jamais `/`, seul un futur monitoring UptimeRobot sur Vercel en pâtirait ; pointer un éventuel monitor sur `/health` à la place.
+6. Config sur le dashboard Vercel (projet séparé, Root Directory = `apps/api`) : copier les env vars depuis l'ancien service Render (`DATABASE_URL`, `JWT_SECRET`, `WEB_ORIGIN`, `GEMINI_API_KEY`, `ADMIN_EMAILS`).
+7. Sur le projet **the-harkerhood-web**, mettre à jour `VITE_API_URL` = URL de la nouvelle API Vercel, puis redéployer (Vite bake les env vars au build, un simple changement de variable ne suffit pas).
+
+Testé bout en bout en prod (inscription, token, `/api/dashboard/stats`) — fonctionne intégralement.
+
+## 🔴 EN COURS : NationalFinance et VériCode restent à migrer
+
+Même cause (suspension Render), même solution (Vercel), mais complication supplémentaire :
+
+- `nationalfinance` (repo `banque-en-ligne`, local `/home/jordan/Documents/nationalfinance`) et `verification-site` / VériCode (repo `verification-site`, local `/home/jordan/Documents/verification-site`) utilisent **better-sqlite3** avec un fichier `.db` local (`nationalfinance.db`, `verification.db`).
+- Un environnement serverless (Vercel) n'a **pas de disque persistant** — impossible d'utiliser SQLite en fichier local tel quel. Il faut migrer leur stockage vers une base hébergée (Neon Postgres, comme Hackerhood, gratuit) avant de pouvoir les déployer sur Vercel.
+- Cette limitation existait déjà silencieusement sur Render free (filesystem éphémère à chaque redeploy) — la migration règle donc aussi un risque de perte de données préexistant.
+- Plan pour chacun des 2 projets : (a) ajouter Neon/Postgres + adapter `database.js` (remplacer les appels `better-sqlite3` par `pg`, adapter la syntaxe SQL SQLite→Postgres), (b) migrer les données existantes du `.db` local vers la nouvelle base si elles doivent être conservées, (c) appliquer le même pattern Express→Vercel que Hackerhood (app.ts / api/index.ts / vercel.json), (d) configurer le projet Vercel + variables d'env, (e) tester bout en bout, (f) mettre à jour les moniteurs UptimeRobot vers les nouvelles URLs.
 
 ## Pour reprendre ce projet dans une nouvelle session
 
-Donner ce fichier à lire, puis `git log --oneline -10` pour l'historique récent. Le prochain point de reprise le plus probable est la migration Oracle décrite ci-dessus.
+Donner ce fichier à lire, puis `git log --oneline -10` pour l'historique récent. Le prochain point de reprise est la migration de NationalFinance puis VériCode décrite ci-dessus.
