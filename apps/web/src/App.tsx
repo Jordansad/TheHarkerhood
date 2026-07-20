@@ -10,6 +10,7 @@ import { Register } from '@/pages/Register'
 import { Dashboard } from '@/pages/Dashboard'
 import { Roadmap } from '@/pages/Roadmap'
 import { SkillDetail } from '@/pages/SkillDetail'
+import { SkillTheoryEditor } from '@/pages/SkillTheoryEditor'
 import { Methodologies } from '@/pages/Methodologies'
 import { MethodologyDetail } from '@/pages/MethodologyDetail'
 import { Activities } from '@/pages/Activities'
@@ -45,6 +46,7 @@ function AppRoutes() {
       <Route element={<AuthGuard />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/roadmap" element={<Roadmap />} />
+        <Route path="/roadmap/:slug/cours" element={<SkillTheoryEditor />} />
         <Route path="/roadmap/:slug" element={<SkillDetail />} />
         <Route path="/methodologies" element={<Methodologies />} />
         <Route path="/methodologies/:slug" element={<MethodologyDetail />} />

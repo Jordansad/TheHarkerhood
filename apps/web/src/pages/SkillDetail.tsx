@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, ExternalLink, FlaskConical } from 'lucide-react'
+import { ArrowLeft, ExternalLink, FlaskConical, Clock, BookOpen, Pencil } from 'lucide-react'
 import { api, ApiError } from '@/lib/api-client'
+import { useAuth } from '@/lib/use-auth'
+import { canManageQuiz } from '@/lib/can-manage-quiz'
 import { CATEGORY_LABEL } from '@/lib/category'
 import { Card } from '@/components/ui/Card'
 import { DifficultyBadge, Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { FullPageSpinner } from '@/components/ui/Spinner'
 import { ErrorState } from '@/components/ui/ErrorState'
+import { Markdown } from '@/components/ui/Markdown'
 import { cn } from '@/lib/utils'
 import type { SkillDTO, SkillProgressStatus } from '@hackerhood/types'
 
@@ -19,6 +22,8 @@ const STATUS_OPTIONS: { value: SkillProgressStatus; label: string }[] = [
 
 export function SkillDetail() {
   const { slug } = useParams<{ slug: string }>()
+  const { user } = useAuth()
+  const isManager = canManageQuiz(user?.role)
   const [skill, setSkill] = useState<SkillDTO | null>(null)
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -63,6 +68,34 @@ export function SkillDetail() {
         <h1 className="mt-2 text-2xl font-bold">{skill.title}</h1>
         <p className="mt-2 text-text-muted">{skill.description}</p>
       </div>
+
+      {(skill.theoryContent || isManager) && (
+        <Card>
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-text-muted">
+              <BookOpen className="h-4 w-4" /> Cours théorique
+            </h2>
+            <div className="flex items-center gap-2 shrink-0">
+              {skill.theoryContent && (
+                <Badge className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" /> ~{skill.theoryReadingMinutes} min
+                </Badge>
+              )}
+              {!skill.theoryPublished && isManager && <Badge className="text-warning">Brouillon</Badge>}
+              {isManager && (
+                <Link to={`/roadmap/${skill.slug}/cours`} className="rounded-md p-1.5 text-text-muted hover:bg-surface-hover hover:text-text">
+                  <Pencil className="h-3.5 w-3.5" />
+                </Link>
+              )}
+            </div>
+          </div>
+          {skill.theoryContent ? (
+            <Markdown content={skill.theoryContent} />
+          ) : (
+            <p className="text-sm text-text-muted">Aucun cours théorique publié pour le moment.</p>
+          )}
+        </Card>
+      )}
 
       <Card>
         <h2 className="text-sm font-semibold text-text-muted">Pourquoi c'est important</h2>

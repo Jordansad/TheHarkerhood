@@ -99,17 +99,20 @@ model User {
 }
 
 model Skill {
-  id             String          @id @default(uuid())
-  slug           String          @unique
-  title          String
-  description    String
-  importance     String
-  category       SkillCategory
-  phase          RoadmapPhase
-  difficulty     SkillDifficulty
-  estimatedHours Int
-  position       Int             @default(0)
-  createdAt      DateTime        @default(now())
+  id               String          @id @default(uuid())
+  slug             String          @unique
+  title            String
+  description      String
+  importance       String
+  category         SkillCategory
+  phase            RoadmapPhase
+  difficulty       SkillDifficulty
+  estimatedHours   Int
+  position         Int             @default(0)
+  createdAt        DateTime        @default(now())
+  theoryContent    String          @default("")
+  theoryPublished  Boolean         @default(false)
+  theoryUpdatedAt  DateTime?
 
   prerequisites   Skill[] @relation("SkillPrerequisites")
   unlockedBySkill Skill[] @relation("SkillPrerequisites")

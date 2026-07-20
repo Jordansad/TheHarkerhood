@@ -55,6 +55,19 @@ export interface SkillDTO {
   resources: ResourceDTO[]
   labs: LabRecommendationDTO[]
   progress: SkillProgressStatus
+  theoryContent: string | null
+  theoryPublished: boolean
+  theoryReadingMinutes: number
+}
+
+export interface SkillTheoryEditDTO {
+  id: string
+  slug: string
+  title: string
+  theoryContent: string
+  theoryPublished: boolean
+  theoryUpdatedAt: string | null
+  theoryReadingMinutes: number
 }
 
 export type ProgressionTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond' | 'elite' | 'master' | 'legend'

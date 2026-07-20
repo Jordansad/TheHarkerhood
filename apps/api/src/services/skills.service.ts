@@ -1,6 +1,6 @@
 import { prisma } from '../lib/prisma'
 import { NotFoundError } from '../lib/errors'
-import type { SkillDTO, SkillProgressStatus } from '@hackerhood/types'
+import type { SkillDTO, SkillProgressStatus, SkillTheoryEditDTO } from '@hackerhood/types'
 import { Prisma } from '@prisma/client'
 import { awardXp } from './xp.service'
 
@@ -9,6 +9,15 @@ const XP_BY_DIFFICULTY: Record<string, number> = {
   intermediate: 100,
   advanced: 150,
   expert: 200,
+}
+
+// Lecture technique avec extraits de code : ~130 mots/min, arrondi à la minute supérieure.
+const WORDS_PER_MINUTE = 130
+
+function computeReadingMinutes(content: string): number {
+  const words = content.trim().split(/\s+/).filter(Boolean).length
+  if (words === 0) return 0
+  return Math.max(1, Math.ceil(words / WORDS_PER_MINUTE))
 }
 
 const skillWithRelations = Prisma.validator<Prisma.SkillDefaultArgs>()({
@@ -32,6 +41,9 @@ function toSkillDTO(skill: SkillWithRelations, progress: SkillProgressStatus): S
     resources: skill.resources.map((r) => ({ id: r.id, title: r.title, url: r.url, type: r.type })),
     labs: skill.labs.map((l) => ({ id: l.id, title: l.title, platform: l.platform, url: l.url, difficulty: l.difficulty })),
     progress,
+    theoryContent: skill.theoryPublished ? skill.theoryContent : null,
+    theoryPublished: skill.theoryPublished,
+    theoryReadingMinutes: computeReadingMinutes(skill.theoryContent),
   }
 }
 
@@ -75,4 +87,30 @@ export async function setSkillProgress(userId: string, slug: string, status: Ski
   }
 
   return getSkillBySlug(userId, slug)
+}
+
+function toTheoryEditDTO(skill: { id: string; slug: string; title: string; theoryContent: string; theoryPublished: boolean; theoryUpdatedAt: Date | null }): SkillTheoryEditDTO {
+  return {
+    id: skill.id,
+    slug: skill.slug,
+    title: skill.title,
+    theoryContent: skill.theoryContent,
+    theoryPublished: skill.theoryPublished,
+    theoryUpdatedAt: skill.theoryUpdatedAt ? skill.theoryUpdatedAt.toISOString() : null,
+    theoryReadingMinutes: computeReadingMinutes(skill.theoryContent),
+  }
+}
+
+export async function getSkillTheoryForEdit(slug: string): Promise<SkillTheoryEditDTO> {
+  const skill = await prisma.skill.findUnique({ where: { slug } })
+  if (!skill) throw new NotFoundError('Compétence introuvable.')
+  return toTheoryEditDTO(skill)
+}
+
+export async function updateSkillTheory(slug: string, theoryContent: string, theoryPublished: boolean): Promise<SkillTheoryEditDTO> {
+  const skill = await prisma.skill.update({
+    where: { slug },
+    data: { theoryContent, theoryPublished, theoryUpdatedAt: new Date() },
+  })
+  return toTheoryEditDTO(skill)
 }
