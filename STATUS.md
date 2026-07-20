@@ -52,15 +52,26 @@ API (Vercel, migré depuis Render) : https://the-harkerhood-api-two.vercel.app
 
 Testé bout en bout en prod (inscription, token, `/api/dashboard/stats`) — fonctionne intégralement.
 
-## 🔴 EN COURS : NationalFinance et VériCode restent à migrer
+## ✅ TERMINÉ : NationalFinance et VériCode migrés (SQLite → Postgres + Vercel)
 
-Même cause (suspension Render), même solution (Vercel), mais complication supplémentaire :
+Les 3 services Render sont maintenant tous sur Vercel + Neon Postgres. Migration complète le 2026-07-20.
 
-- `nationalfinance` (repo `banque-en-ligne`, local `/home/jordan/Documents/nationalfinance`) et `verification-site` / VériCode (repo `verification-site`, local `/home/jordan/Documents/verification-site`) utilisent **better-sqlite3** avec un fichier `.db` local (`nationalfinance.db`, `verification.db`).
-- Un environnement serverless (Vercel) n'a **pas de disque persistant** — impossible d'utiliser SQLite en fichier local tel quel. Il faut migrer leur stockage vers une base hébergée (Neon Postgres, comme Hackerhood, gratuit) avant de pouvoir les déployer sur Vercel.
-- Cette limitation existait déjà silencieusement sur Render free (filesystem éphémère à chaque redeploy) — la migration règle donc aussi un risque de perte de données préexistant.
-- Plan pour chacun des 2 projets : (a) ajouter Neon/Postgres + adapter `database.js` (remplacer les appels `better-sqlite3` par `pg`, adapter la syntaxe SQL SQLite→Postgres), (b) migrer les données existantes du `.db` local vers la nouvelle base si elles doivent être conservées, (c) appliquer le même pattern Express→Vercel que Hackerhood (app.ts / api/index.ts / vercel.json), (d) configurer le projet Vercel + variables d'env, (e) tester bout en bout, (f) mettre à jour les moniteurs UptimeRobot vers les nouvelles URLs.
+- `nationalfinance` (repo `banque-en-ligne`, local `/home/jordan/Documents/nationalfinance`) et `verification-site` / VériCode (repo `verification-site`, local `/home/jordan/Documents/verification-site`) utilisaient **better-sqlite3** avec un fichier `.db` local — incompatible avec le filesystem non persistant de Vercel (et déjà silencieusement à risque sur Render free, dont le filesystem est éphémère à chaque redeploy).
+- Conversion appliquée aux deux : `database.js` réécrit avec `pg.Pool` (schéma + seed via `initDb()`), `server.js` converti en async/await avec des helpers `one/all/run` qui auto-convertissent les `?` façon SQLite en `$1,$2…` façon Postgres (`toPg()`), `lastInsertRowid` remplacé par `RETURNING id`, codes d'erreur SQLite (`SQLITE_CONSTRAINT_UNIQUE`) remplacés par les codes Postgres (`23505`), `DATE('now')` remplacé par `::date`/`CURRENT_DATE`.
+- Même pattern Vercel que Hackerhood mais en JS (pas TS) : `api/index.js` (`module.exports = require('../server')`), `vercel.json` avec seulement `{ "source": "/api/(.*)", "destination": "/api/index" }` (pas de catch-all — laisser Vercel servir les fichiers statiques directement depuis `public/`, où les `.html` ont été déplacés).
+- **2 bugs de robustesse découverts et corrigés dans les deux projets** :
+  1. Si l'init du schéma (`initDb()`) échouait une seule fois (blip réseau), la promesse était mise en cache indéfiniment → toutes les requêtes suivantes échouaient en boucle jusqu'au redémarrage du process. Fix : reset de la promesse en cas d'échec pour permettre un retry à la requête suivante.
+  2. Endpoint stats de VériCode : 13 requêtes Postgres lancées en `Promise.all` → fusionnées en une seule requête avec `COUNT(*) FILTER (WHERE ...)`, plus robuste et plus rapide.
+  3. Ajout d'une résolution DNS forcée en IPv4 uniquement (option `lookup` de `pg`) — contourne un souci de résolution AAAA qui traînait/échouait sur cette machine de dev (aucun impact en prod, où IPv6 fonctionne normalement).
+- URLs de prod : NationalFinance → https://nationalfinance.vercel.app (ou `banque-en-ligne-brown.vercel.app`), VériCode → https://vericode-bice.vercel.app.
+- Testé bout en bout en prod pour les deux : pages statiques, soumission/suivi (VériCode), login/stats admin, CRUD complet, recherche/filtres.
+- `render.yaml` laissé en place dans les deux repos (fichier mort, inoffensif, pas nettoyé).
+
+## Reste à faire (mineur, non bloquant)
+
+- Mettre à jour les moniteurs UptimeRobot vers les nouvelles URLs Vercel (ils pointent encore vers les anciennes URLs Render suspendues).
+- Chemin racine `/` de l'API Hackerhood sur Vercel (`the-harkerhood-api-two.vercel.app/`) renvoie toujours `FUNCTION_INVOCATION_FAILED` malgré plusieurs tentatives de fix — non bloquant, `/health` et toutes les routes `/api/*` fonctionnent normalement, l'app web n'appelle jamais `/`.
 
 ## Pour reprendre ce projet dans une nouvelle session
 
-Donner ce fichier à lire, puis `git log --oneline -10` pour l'historique récent. Le prochain point de reprise est la migration de NationalFinance puis VériCode décrite ci-dessus.
+Donner ce fichier à lire, puis `git log --oneline -10` dans chacun des 3 repos pour l'historique récent. Plus aucune tâche majeure en attente sur l'infrastructure — la suite dépendra des demandes du fondateur.
