@@ -7,3 +7,5 @@ export const adminRouter = Router()
 
 adminRouter.use(requireAuth, requireAdmin)
 adminRouter.get('/overview', asyncHandler(adminController.overview))
+adminRouter.get('/members', asyncHandler(adminController.members))
+adminRouter.get('/members/:id', asyncHandler(adminController.memberDetail))

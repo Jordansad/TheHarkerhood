@@ -1,5 +1,5 @@
-import { Navigate } from 'react-router-dom'
-import { ShieldAlert, TrendingUp, Users, Clock } from 'lucide-react'
+import { Link, Navigate } from 'react-router-dom'
+import { ShieldAlert, TrendingUp, Users, Clock, ArrowRight } from 'lucide-react'
 import { useAuth } from '@/lib/use-auth'
 import { useApiGet } from '@/lib/use-api-get'
 import { canViewAdmin } from '@/lib/can-view-admin'
@@ -35,9 +35,17 @@ export function Admin() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Dashboard fondateur</h1>
-        <p className="mt-1 text-sm text-text-muted">Vue d'ensemble de l'activité de la communauté.</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Dashboard fondateur</h1>
+          <p className="mt-1 text-sm text-text-muted">Vue d'ensemble de l'activité de la communauté.</p>
+        </div>
+        <Link
+          to="/admin/membres"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-accent/30 bg-accent/10 px-3.5 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/20"
+        >
+          Voir la progression de chaque membre <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

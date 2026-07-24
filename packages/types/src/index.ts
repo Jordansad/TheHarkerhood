@@ -327,6 +327,62 @@ export interface AdminOverviewDTO {
   recentActivity: AdminActivityEntryDTO[]
 }
 
+export type MemberFollowUpStatus = 'on_track' | 'at_risk' | 'inactive'
+
+export interface AdminMemberListItemDTO {
+  id: string
+  displayName: string
+  role: UserRole
+  tier: ProgressionTier
+  tierLabel: string
+  xp: number
+  currentPhase: RoadmapPhase | null
+  completedSkills: number
+  totalSkills: number
+  progressPercent: number
+  lastActivityAt: string | null
+  daysSinceActivity: number | null
+  followUpStatus: MemberFollowUpStatus
+}
+
+export interface AdminPhaseProgressDTO {
+  phase: RoadmapPhase
+  label: string
+  total: number
+  completed: number
+  inProgress: number
+  percent: number
+}
+
+export interface AdminMemberBadgeDTO {
+  slug: string
+  title: string
+  icon: string
+  earnedAt: string
+}
+
+export interface AdminMemberDetailDTO {
+  id: string
+  displayName: string
+  email: string
+  role: UserRole
+  tier: ProgressionTier
+  tierLabel: string
+  xp: number
+  xpToNextTier: number
+  streakCount: number
+  createdAt: string
+  lastActivityAt: string | null
+  daysSinceActivity: number | null
+  followUpStatus: MemberFollowUpStatus
+  completedSkills: number
+  totalSkills: number
+  progressPercent: number
+  phaseProgress: AdminPhaseProgressDTO[]
+  badges: AdminMemberBadgeDTO[]
+  recentActivity: AdminActivityEntryDTO[]
+}
+
 export interface AiConversationSummaryDTO {
   id: string
   title: string
