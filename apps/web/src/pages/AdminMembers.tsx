@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
-import { ArrowLeft, Search } from 'lucide-react'
+import { ArrowLeft, Search, Trash2 } from 'lucide-react'
 import { useAuth } from '@/lib/use-auth'
 import { useApiGet } from '@/lib/use-api-get'
+import { useToast } from '@/lib/use-toast'
+import { api, ApiError } from '@/lib/api-client'
 import { canViewAdmin } from '@/lib/can-view-admin'
 import { ROLE_LABEL } from '@/lib/user-role'
 import { TIER_COLOR } from '@/lib/tier'
@@ -33,6 +35,8 @@ export function AdminMembers() {
   const isAdmin = canViewAdmin(user?.role)
   const { data, error, retry } = useApiGet<{ members: AdminMemberListItemDTO[] }>(isAdmin ? '/api/admin/members' : null)
   const [query, setQuery] = useState('')
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const toast = useToast()
 
   const filtered = useMemo(() => {
     if (!data) return []
@@ -40,6 +44,24 @@ export function AdminMembers() {
     if (!q) return data.members
     return data.members.filter((m) => m.displayName.toLowerCase().includes(q))
   }, [data, query])
+
+  async function handleDelete(member: AdminMemberListItemDTO) {
+    const confirmed = window.confirm(
+      `Supprimer définitivement le compte de ${member.displayName} ? Toute sa progression, ses badges et son historique seront perdus. Cette action est irréversible.`
+    )
+    if (!confirmed) return
+
+    setDeletingId(member.id)
+    try {
+      await api.delete(`/api/admin/members/${member.id}`)
+      toast.success(`Compte de ${member.displayName} supprimé.`)
+      retry()
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : 'Impossible de contacter le serveur.')
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   if (!isAdmin) return <Navigate to="/dashboard" replace />
   if (error) return <ErrorState message={error} onRetry={retry} />
@@ -75,6 +97,7 @@ export function AdminMembers() {
               <th className="px-4 py-3 font-medium">Progression</th>
               <th className="px-4 py-3 font-medium">Dernière activité</th>
               <th className="px-4 py-3 font-medium">Statut</th>
+              <th className="px-4 py-3 font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -106,6 +129,18 @@ export function AdminMembers() {
                 </td>
                 <td className="px-4 py-3">
                   <Badge className={STATUS_CLASS[m.followUpStatus]}>{STATUS_LABEL[m.followUpStatus]}</Badge>
+                </td>
+                <td className="px-4 py-3">
+                  {m.id !== user?.id && (
+                    <button
+                      onClick={() => handleDelete(m)}
+                      disabled={deletingId === m.id}
+                      title="Supprimer ce compte"
+                      className="rounded-lg p-2 text-text-muted transition-colors hover:bg-danger/10 hover:text-danger disabled:opacity-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

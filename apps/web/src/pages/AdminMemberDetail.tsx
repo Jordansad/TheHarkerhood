@@ -1,13 +1,17 @@
-import { Link, Navigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Award, Clock, Flame } from 'lucide-react'
+import { useState } from 'react'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft, Award, Clock, Flame, Trash2 } from 'lucide-react'
 import { useAuth } from '@/lib/use-auth'
 import { useApiGet } from '@/lib/use-api-get'
+import { useToast } from '@/lib/use-toast'
+import { api, ApiError } from '@/lib/api-client'
 import { canViewAdmin } from '@/lib/can-view-admin'
 import { ROLE_LABEL } from '@/lib/user-role'
 import { TIER_COLOR } from '@/lib/tier'
 import { ACTIVITY_LABEL } from '@/lib/activity-type'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { FullPageSpinner } from '@/components/ui/Spinner'
 import { ErrorState } from '@/components/ui/ErrorState'
@@ -40,8 +44,29 @@ function timeAgo(iso: string): string {
 export function AdminMemberDetail() {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
+  const navigate = useNavigate()
+  const toast = useToast()
   const isAdmin = canViewAdmin(user?.role)
   const { data, error, retry } = useApiGet<AdminMemberDetailDTO>(isAdmin && id ? `/api/admin/members/${id}` : null)
+  const [deleting, setDeleting] = useState(false)
+
+  async function handleDelete() {
+    if (!data) return
+    const confirmed = window.confirm(
+      `Supprimer définitivement le compte de ${data.displayName} ? Toute sa progression, ses badges et son historique seront perdus. Cette action est irréversible.`
+    )
+    if (!confirmed) return
+
+    setDeleting(true)
+    try {
+      await api.delete(`/api/admin/members/${data.id}`)
+      toast.success(`Compte de ${data.displayName} supprimé.`)
+      navigate('/admin/membres', { replace: true })
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : 'Impossible de contacter le serveur.')
+      setDeleting(false)
+    }
+  }
 
   if (!isAdmin) return <Navigate to="/dashboard" replace />
   if (error) return <ErrorState message={error} onRetry={retry} />
@@ -60,7 +85,14 @@ export function AdminMemberDetail() {
               {ROLE_LABEL[data.role]} · {data.email}
             </p>
           </div>
-          <Badge className={STATUS_CLASS[data.followUpStatus]}>{STATUS_LABEL[data.followUpStatus]}</Badge>
+          <div className="flex items-center gap-2">
+            <Badge className={STATUS_CLASS[data.followUpStatus]}>{STATUS_LABEL[data.followUpStatus]}</Badge>
+            {data.id !== user?.id && (
+              <Button variant="danger" onClick={handleDelete} disabled={deleting}>
+                <Trash2 className="h-4 w-4" /> Supprimer le compte
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 

@@ -16,3 +16,8 @@ export async function memberDetail(req: AuthedRequest, res: Response) {
   const data = await adminService.getMemberDetail(req.params.id)
   res.json(data)
 }
+
+export async function deleteMember(req: AuthedRequest, res: Response) {
+  await adminService.deleteMember(req.userId!, req.params.id)
+  res.status(204).end()
+}

@@ -1,6 +1,6 @@
 import { prisma } from '../lib/prisma'
 import { computeTier } from '../lib/xp'
-import { NotFoundError } from '../lib/errors'
+import { NotFoundError, BadRequestError } from '../lib/errors'
 import { PHASE_LABEL, PHASE_ORDER } from '../lib/phase'
 import type {
   AdminOverviewDTO,
@@ -225,4 +225,15 @@ export async function getMemberDetail(userId: string): Promise<AdminMemberDetail
       createdAt: l.createdAt.toISOString(),
     })),
   }
+}
+
+export async function deleteMember(requesterId: string, targetId: string): Promise<void> {
+  if (requesterId === targetId) {
+    throw new BadRequestError('Vous ne pouvez pas supprimer votre propre compte.')
+  }
+
+  const target = await prisma.user.findUnique({ where: { id: targetId }, select: { id: true } })
+  if (!target) throw new NotFoundError('Membre introuvable.')
+
+  await prisma.user.delete({ where: { id: targetId } })
 }
